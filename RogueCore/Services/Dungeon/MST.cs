@@ -6,7 +6,7 @@ namespace RogueCore.Services.Dungeon;
 public class MST
 {
     private Random _random;
-    private List<DungeonGenerator.Cell> _corridors;
+    private List<DungeonGenerator.Cell>? _corridors;
 
     public MST(Random random)
     {
@@ -15,7 +15,7 @@ public class MST
 
     public List<DungeonGenerator.Cell> CreateCorridors(List<DungeonGenerator.Cell> cells)
     {
-
+        _corridors = new List<DungeonGenerator.Cell>();
         List<DungeonGenerator.Cell> reached = new List<DungeonGenerator.Cell>();
         List<DungeonGenerator.Cell> unreached = new List<DungeonGenerator.Cell>(cells);
 
@@ -25,10 +25,9 @@ public class MST
         while (unreached.Count > 0)
         {
             float minDist = float.MaxValue;
-            DungeonGenerator.Cell bestA = null;
-            DungeonGenerator.Cell bestB = null;
+            DungeonGenerator.Cell? bestA = null;
+            DungeonGenerator.Cell? bestB = null;
 
-            // Find the shortest edge connecting reached to unreached
             foreach (DungeonGenerator.Cell r in reached)
             {
                 foreach (DungeonGenerator.Cell u in unreached)
@@ -45,13 +44,12 @@ public class MST
 
             if (bestA != null && bestB != null)
             {
-                // Connect the two rooms
                 int x1 = (bestA.x1 + bestA.x2) / 2;
                 int y1 = (bestA.y1 + bestA.y2) / 2;
                 int x2 = (bestB.x1 + bestB.x2) / 2;
                 int y2 = (bestB.y1 + bestB.y2) / 2;
 
-                // Use your existing L-shape logic here
+
                 CreateLShapedCorridor(x1, y1, x2, y2);
 
                 reached.Add(bestB);
@@ -79,13 +77,11 @@ public class MST
 
         if (x1 == x2 || y1 == y2)
         {
-            // Straight line connection
             _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2), Math.Max(x1, x2) + 1, 
                 Math.Min(y1, y2), Math.Max(y1, y2) + 1));
         }
         else
         {
-            // Randomized L-Shape
             if (_random.Next(2) == 0)
             {
                 _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2), Math.Max(x1, x2) + 1, y1, y1 + 1));

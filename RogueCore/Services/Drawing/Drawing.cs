@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using RogueCore.Helpers;
+using RogueCore.Models;
 using RogueCore.Services.Dungeon;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -10,7 +11,8 @@ using Color = SixLabors.ImageSharp.Color;
 namespace RogueCore.Services;
 public static class SnapshotService
 {
-    public static void SaveMapSnapshot(List<List<int>> map, string fileName)
+    //Fully AI generated. I cannot be bothered
+    public static void SaveMapSnapshot(List<List<TileType>> map, string fileName)
     {
         int width = map.Count;
         int height = map[0].Count;
@@ -27,11 +29,11 @@ public static class SnapshotService
                 // Determine color based on tile type
                 Color tileColor = map[x][y] switch
                 {
-                    1 => Color.White,     // Floor
-                    2 => Color.LightBlue,  // Room
-                    _ => Color.Black       // Wall
+                    TileType.Empty => Color.DarkGray,
+                    TileType.Floor => Color.White,
+                    TileType.Corridor => Color.Red,
+                    _ => Color.Black
                 };
-
                 // Draw the "tile" by coloring pixels
                 for (int i = 0; i < scale; i++)
                 {
@@ -44,32 +46,40 @@ public static class SnapshotService
         }
 
         // 3. Save to the app's cache directory
-        string path = fileName+".bmp";
+        string path = "Snapshots/ " + fileName+".bmp";
         image.SaveAsPng(path);
         
         // This line is great for debugging in Rider's terminal
         Console.WriteLine($"SNAPSHOT CREATED: {path}");
     }
 
-    public static List<List<int>> ConvertCellToGrid(List<Dungeon.DungeonGenerator.Cell> cells)
+    public static List<List<TileType>> ConvertCellToGrid(List<DungeonGenerator.Cell> floors, List<DungeonGenerator.Cell> corridors)
     {
-        List<List<int>> map = new List<List<int>>();
+        List<List<TileType>> map = new List<List<TileType>>();
         for (int x = 0; x < GameSettings.Dungeon.MapWidth; x++)
         {
-            List<int> column = new List<int>(new int[GameSettings.Dungeon.MapHeight]); // Creates a row of 0s
+            List<TileType> column = new List<TileType>(new TileType[GameSettings.Dungeon.MapHeight]); // Creates a row of 0s
             map.Add(column);
         }
 
-        for (int i = 0; i < cells.Count; i++)
+        InsertType(floors, map, TileType.Floor);
+        InsertType(corridors, map, TileType.Corridor);
+        
+        return map;
+    }
+
+    private static void InsertType(List<DungeonGenerator.Cell> floors, List<List<TileType>> map, TileType type)
+    {
+        for (int i = 0; i < floors.Count; i++)
         {
-            for (int j = cells[i].x1; j < cells[i].x2; j++)
+            for (int j = floors[i].x1; j < floors[i].x2; j++)
             {
-                for (int k = cells[i].y1; k < cells[i].y2; k++)
+                for (int k = floors[i].y1; k < floors[i].y2; k++)
                 {
-                    map[j][k] = 1;
+                    if(type == TileType.Corridor && map[j][k] == TileType.Floor) continue; // Don't overwrite rooms with corridors
+                    map[j][k] = type;
                 }
             }
         }
-        return map;
     }
 }

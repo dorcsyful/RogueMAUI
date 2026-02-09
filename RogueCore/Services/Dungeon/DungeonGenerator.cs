@@ -12,14 +12,8 @@ public class DungeonGenerator
     {
         public int x1,x2,y1,y2;
         public Cell? left,right;
-        public List<Cell> vertical_Neighbours;
-        public List<Cell> horizontal_Neighbours;
-        public bool isCorridor;
         public Cell(int x1, int x2, int y1, int y2)
         {
-            isCorridor = false;
-            vertical_Neighbours = new List<Cell>();
-            horizontal_Neighbours = new List<Cell>();
             left = null; right = null;
             this.x1 = x1;
             this.x2 = x2;
@@ -30,24 +24,30 @@ public class DungeonGenerator
 
     private Random _random = new Random();
     private BSP _bsp;
+    private MST _mst;
     private List<Cell> _cells;
     private List<Cell> _corridors;
     public DungeonGenerator()
     {
         _bsp = new BSP(_random);
+        _mst = new MST(_random);
+        
         _cells = new List<Cell>();
+        _corridors = new List<Cell>();
     }
     public void GenerateDungeon()
     {
-        _cells = new List<Cell>();
-        _corridors = new List<Cell>();
+
         Cell root = _bsp.Generate(GameSettings.Dungeon.MapWidth,GameSettings.Dungeon.MapHeight);
         SortToList(root);
-        FindNeighbours();
         Trim();
+        _corridors = _mst.CreateCorridors(_cells);
+
+        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertCellToGrid(_cells,_corridors), "BSP");
+        
         _cells.AddRange(_corridors);
         
-        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertCellToGrid(_cells), "BSP1");
+        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertCellToGrid(_cells,_corridors), "MST");
     }
     private void SortToList(DungeonGenerator.Cell root)
     {
@@ -61,31 +61,7 @@ public class DungeonGenerator
             SortToList(root.right);
         }
     }
-    private void FindNeighbours()
-    {
-        foreach (Cell cell in _cells)
-        {
-            foreach (Cell other in _cells)
-            {
-                if(cell == other) continue;
-                if (cell.x2 == other.x1)
-                {
-                    if (Math.Max(cell.y1, other.y1) < Math.Min(cell.y2, other.y2))
-                    {
-                        cell.horizontal_Neighbours.Add(other);
-                    }
-                }
 
-                if (cell.y1 == other.y2)
-                {
-                    if (Math.Max(cell.x1, other.x1) < Math.Min(cell.x2, other.x2))
-                    {
-                        cell.vertical_Neighbours.Add(other);
-                    }
-                }
-            }
-        }
-    }
     private void Trim()
     {
         for (int i = 0; i < _cells.Count; i++)
