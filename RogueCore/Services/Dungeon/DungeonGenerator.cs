@@ -26,8 +26,8 @@ public class DungeonGenerator
     {
         public int x,y;
         public TileType type;
-        public Cell parent;
-        public Tile(int x, int y, TileType type, Cell parent)
+        public Cell? parent;
+        public Tile(int x, int y, TileType type, Cell? parent)
         {
             this.parent = parent;
             this.x = x;
@@ -41,6 +41,7 @@ public class DungeonGenerator
     private List<Cell> _cells;
     private List<Cell> _corridors;
     private List<Tile> _tiles;
+    private List<List<Tile>> _map;
     public DungeonGenerator()
     {
         _bsp = new BSP(_random);
@@ -56,15 +57,15 @@ public class DungeonGenerator
         Cell root = _bsp.Generate(GameSettings.Dungeon.MapWidth,GameSettings.Dungeon.MapHeight);
         SortToList(root);
         Trim();
-
-        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertCellToGrid(_cells,_corridors,_tiles), "1_BSP"); 
+        BuildMap();
+        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "1_BSP"); 
         
         _corridors = _mst.CreateCorridors(_cells);
-        
-        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertCellToGrid(_cells,_corridors,_tiles), "2_MST");
+        BuildMap();
+        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "2_MST");
         
         CreateEntranceExit();
-        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertCellToGrid(_cells,_corridors,_tiles),"3_EntranceExit");
+        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map),"3_EntranceExit");
     }
     private void SortToList(DungeonGenerator.Cell root)
     {
@@ -130,4 +131,43 @@ public class DungeonGenerator
             Console.WriteLine("EXIT PLACED: " + exit.x + "," + exit.y);
         }
     }
+    
+    public void BuildMap()
+    {
+        _map = new List<List<Tile>>();
+
+        for (int x = 0; x < GameSettings.Dungeon.MapWidth; x++)
+        {
+            List<Tile> column = new List<Tile>(new Tile[GameSettings.Dungeon.MapHeight]); // Creates a row of 0s
+            for (int j = 0; j < column.Count; j++)
+            {
+                column[j] = new Tile(x, j, TileType.Empty, null);
+            }
+            _map.Add(column);
+        }
+        for (int i = 0; i < _cells.Count; i++)
+        {
+            for (int j = _cells[i].x1; j < _cells[i].x2; j++)
+            {
+                for (int k = _cells[i].y1; k < _cells[i].y2; k++)
+                {
+                    _map[j][k] = new Tile(j,k,TileType.Floor, _cells[i]);
+                }
+            }
+        }
+        
+        for(int i = 0; i < _corridors.Count; i++)
+        {
+            for (int j = _corridors[i].x1; j < _corridors[i].x2; j++)
+            {
+                for (int k = _corridors[i].y1; k < _corridors[i].y2; k++)
+                {
+                    _map[j][k] = new Tile(j,k,TileType.Corridor, _corridors[i]);
+                }
+            }
+        }
+        
+    }
+
+
 }

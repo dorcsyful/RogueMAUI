@@ -55,39 +55,19 @@ public static class SnapshotService
         Console.WriteLine($"SNAPSHOT CREATED: {path}");
     }
 
-    public static List<List<TileType>> ConvertCellToGrid(List<DungeonGenerator.Cell> floors, List<DungeonGenerator.Cell> corridors, List<DungeonGenerator.Tile> tiles)
+    public static List<List<TileType>> ConvertMapToTileTypes(List<List<DungeonGenerator.Tile>> map)
     {
-        List<List<TileType>> map = new List<List<TileType>>();
-        for (int x = 0; x < GameSettings.Dungeon.MapWidth; x++)
+        List<List<TileType>> tileTypeMap = new List<List<TileType>>();
+        for (int x = 0; x < map.Count; x++)
         {
-            List<TileType> column = new List<TileType>(new TileType[GameSettings.Dungeon.MapHeight]); // Creates a row of 0s
-            map.Add(column);
-        }
-
-        InsertType(floors, map, TileType.Floor);
-        InsertType(corridors, map, TileType.Corridor);
-        
-        foreach (var t in tiles)
-        {
-            map[t.x][t.y] = t.type;
-        }
-
-        
-        return map;
-    }
-
-    private static void InsertType(List<DungeonGenerator.Cell> floors, List<List<TileType>> map, TileType type)
-    {
-        for (int i = 0; i < floors.Count; i++)
-        {
-            for (int j = floors[i].x1; j < floors[i].x2; j++)
+            List<TileType> column = new List<TileType>();
+            for (int y = 0; y < map[x].Count; y++)
             {
-                for (int k = floors[i].y1; k < floors[i].y2; k++)
-                {
-                    if(type == TileType.Corridor && map[j][k] == TileType.Floor) continue; // Don't overwrite rooms with corridors
-                    map[j][k] = type;
-                }
+                column.Add(map[x][y].type);
             }
+            tileTypeMap.Add(column);
         }
+        return tileTypeMap;
     }
+
 }
