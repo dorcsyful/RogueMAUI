@@ -44,7 +44,7 @@ public static class SnapshotService
         }
 
         // 3. Save to the app's cache directory
-        string path = "C:\\Users\\dorcs\\source\\repos\\RogueMAUI\\" + fileName+".bmp";
+        string path = fileName+".bmp";
         image.SaveAsPng(path);
         
         // This line is great for debugging in Rider's terminal
