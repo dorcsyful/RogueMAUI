@@ -60,7 +60,7 @@ public class MST
         return _corridors;
     }
     
-    private float GetDistance(DungeonGenerator.Cell a, DungeonGenerator.Cell b)
+    public static float GetDistance(DungeonGenerator.Cell a, DungeonGenerator.Cell b)
     {
         int ax = (a.x1 + a.x2) / 2;
         int ay = (a.y1 + a.y2) / 2;

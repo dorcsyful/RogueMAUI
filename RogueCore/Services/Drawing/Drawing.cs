@@ -32,7 +32,9 @@ public static class SnapshotService
                     TileType.Empty => Color.DarkGray,
                     TileType.Floor => Color.White,
                     TileType.Corridor => Color.Red,
-                    _ => Color.Black
+                    TileType.Entrance => Color.Green,
+                    TileType.Exit => Color.Blue,
+                    _ => Color.Purple
                 };
                 // Draw the "tile" by coloring pixels
                 for (int i = 0; i < scale; i++)
@@ -53,7 +55,7 @@ public static class SnapshotService
         Console.WriteLine($"SNAPSHOT CREATED: {path}");
     }
 
-    public static List<List<TileType>> ConvertCellToGrid(List<DungeonGenerator.Cell> floors, List<DungeonGenerator.Cell> corridors)
+    public static List<List<TileType>> ConvertCellToGrid(List<DungeonGenerator.Cell> floors, List<DungeonGenerator.Cell> corridors, List<DungeonGenerator.Tile> tiles)
     {
         List<List<TileType>> map = new List<List<TileType>>();
         for (int x = 0; x < GameSettings.Dungeon.MapWidth; x++)
@@ -64,6 +66,12 @@ public static class SnapshotService
 
         InsertType(floors, map, TileType.Floor);
         InsertType(corridors, map, TileType.Corridor);
+        
+        foreach (var t in tiles)
+        {
+            map[t.x][t.y] = t.type;
+        }
+
         
         return map;
     }
