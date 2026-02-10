@@ -31,10 +31,12 @@ public static class SnapshotService
                 Color tileColor = map[x][y] switch
                 {
                     TileType.Empty => Color.DarkGray,
-                    TileType.Floor => Color.White,
+                    TileType.Floor => Color.WhiteSmoke,
                     TileType.Corridor => Color.Red,
                     TileType.Entrance => Color.Green,
                     TileType.Exit => Color.Blue,
+                    TileType.Coin => Color.DarkGoldenrod,
+                    
                     _ => Color.Purple
                 };
                 // Draw the "tile" by coloring pixels

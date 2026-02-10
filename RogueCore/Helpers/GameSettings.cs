@@ -20,6 +20,23 @@ namespace RogueCore
                 public const float MinShrink = 0.5f;
                 public const float MaxShrink = 0.8f;
             }
+
+            public static class Interior
+            {
+                public const int MaxNumOfCoins = 40;
+                public const int NumOfCoinsPerRoom = 5;
+                public const int MaxNumOfEnemies = 40;
+                public const int MaxChasingEnemiesPerRoom = 3;
+                public const int MaxPatrollingEnemiesPerRoom = 1;
+                public const int MaxObservingEnemiesPerRoom = 3;
+                public const int MinFoodPerRoom = 1;
+                public const int MaxFoodPerRoom = 5;
+            }
+            
+            public static class Player
+            {
+                public const int MaxHealth = 100;
+            }
         }
     }
 }

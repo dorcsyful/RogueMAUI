@@ -8,7 +8,8 @@ public enum TileType
     Floor = 1,
     Corridor = 2,
     Entrance = 3,
-    Exit = 4
+    Exit = 4,
+    Coin = 5
 }
 
 public class Tile

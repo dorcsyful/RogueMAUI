@@ -39,6 +39,7 @@ public class DungeonGenerator
         _tiles = new List<Tile>();
     }
     public List<Cell> GetCells() { return _cells; }
+    public List<Cell> GetCorridors() { return _corridors; }
     public void GenerateDungeon()
     {
 
