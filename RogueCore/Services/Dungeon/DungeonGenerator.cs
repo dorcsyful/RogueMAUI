@@ -35,6 +35,7 @@ public class DungeonGenerator
             this.type = type;
         }
     }
+    
     private Random _random = new Random();
     private BSP _bsp;
     private MST _mst;
