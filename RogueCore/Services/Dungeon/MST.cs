@@ -75,7 +75,7 @@ public class MST
                     endY = (bestB.y1 + bestB.y2) / 2;
                 }
 
-                CreateLShapedCorridor(startX, startY, endX, endY);
+                CreateLShapedCorridor(startX, startY, endX, endY, bestA, bestB);
 
                 reached.Add(bestB);
                 unreached.Remove(bestB);
@@ -95,7 +95,7 @@ public class MST
         return (float)Math.Sqrt(Math.Pow(ax - bx, 2) + Math.Pow(ay - by, 2));
     }
     
-    private void CreateLShapedCorridor(int x1, int y1, int x2, int y2)
+    private void CreateLShapedCorridor(int x1, int y1, int x2, int y2, DungeonGenerator.Cell bestA, DungeonGenerator.Cell bestB)
     {
         if (Math.Abs(x1 - x2) < 3) x1 = x2;
         if (Math.Abs(y1 - y2) < 3) y1 = y2;
@@ -103,8 +103,10 @@ public class MST
         if (x1 == x2 || y1 == y2)
         {
             // Straight line connection
-            _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2), Math.Max(x1, x2) + 1, 
-                Math.Min(y1, y2), Math.Max(y1, y2) + 1));
+            _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2) - 1, Math.Max(x1, x2) + 1, 
+                Math.Min(y1, y2) -1, Math.Max(y1, y2) + 1));
+            _corridors[^1].left = bestA;
+            _corridors[^1].right = bestB;
         }
         else
         {
@@ -112,14 +114,23 @@ public class MST
             if (_random.Next(2) == 0)
             {
                 _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2), Math.Max(x1, x2) + 1, y1, y1 + 1));
+                _corridors[^1].left = bestA;
+                _corridors[^1].right = bestB;
+                
                 _corridors.Add(new DungeonGenerator.Cell(x2, x2 + 1, Math.Min(y1, y2), Math.Max(y1, y2) + 1));
+                _corridors[^1].left = bestA;
+                _corridors[^1].right = bestB;
             }
             else
             {
                 _corridors.Add(new DungeonGenerator.Cell(x1, x1 + 1, Math.Min(y1, y2), Math.Max(y1, y2) + 1));
-                _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2), Math.Max(x1, x2) + 1, y2, y2 + 1));
+                _corridors[^1].left = bestA;
+                _corridors[^1].right = bestB;
+                
+                _corridors.Add(new DungeonGenerator.Cell(Math.Min(x1, x2), Math.Max(x1, x2) + 1, y2, y2 + 1));            
+                _corridors[^1].left = bestA;
+                _corridors[^1].right = bestB;
             }
         }
     }
-
 }

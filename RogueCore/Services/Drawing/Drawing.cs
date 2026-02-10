@@ -7,6 +7,7 @@ using RogueCore.Services.Dungeon;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using Color = SixLabors.ImageSharp.Color;
+using Tile = RogueCore.Models.Tile;
 
 namespace RogueCore.Services;
 public static class SnapshotService
@@ -55,7 +56,7 @@ public static class SnapshotService
         Console.WriteLine($"SNAPSHOT CREATED: {path}");
     }
 
-    public static List<List<TileType>> ConvertMapToTileTypes(List<List<DungeonGenerator.Tile>> map)
+    public static List<List<TileType>> ConvertMapToTileTypes(List<List<Tile>> map)
     {
         List<List<TileType>> tileTypeMap = new List<List<TileType>>();
         for (int x = 0; x < map.Count; x++)

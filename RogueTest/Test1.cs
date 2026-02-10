@@ -8,7 +8,7 @@ public sealed class Test1
     [TestMethod]
     public void TestMethod1()
     {
-        DungeonGenerator dungeonGenerator = new DungeonGenerator();
-        dungeonGenerator.GenerateDungeon();
+        MapGenerator dungeonGenerator = new MapGenerator();
+        dungeonGenerator.GenerateMap();
     }
 }

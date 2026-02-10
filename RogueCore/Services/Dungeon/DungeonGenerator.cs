@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using RogueCore.Helpers;
 using RogueCore.Models;
 
 namespace RogueCore.Services.Dungeon;
+
 
 public class DungeonGenerator
 {
@@ -22,29 +19,18 @@ public class DungeonGenerator
             this.y2 = y2;
         }
     }
-    public class Tile
-    {
-        public int x,y;
-        public TileType type;
-        public Cell? parent;
-        public Tile(int x, int y, TileType type, Cell? parent)
-        {
-            this.parent = parent;
-            this.x = x;
-            this.y = y;
-            this.type = type;
-        }
-    }
     
-    private Random _random = new Random();
+    private Random _random;
     private BSP _bsp;
     private MST _mst;
     private List<Cell> _cells;
     private List<Cell> _corridors;
     private List<Tile> _tiles;
     private List<List<Tile>> _map;
-    public DungeonGenerator()
+    public DungeonGenerator(Random random)
     {
+        _random = random;
+        
         _bsp = new BSP(_random);
         _mst = new MST(_random);
         
@@ -52,6 +38,7 @@ public class DungeonGenerator
         _corridors = new List<Cell>();
         _tiles = new List<Tile>();
     }
+    public List<Cell> GetCells() { return _cells; }
     public void GenerateDungeon()
     {
 
@@ -64,10 +51,7 @@ public class DungeonGenerator
         _corridors = _mst.CreateCorridors(_cells);
         BuildMap();
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "2_MST");
-        CreateEntranceExit();
         
-        BuildMap();
-        SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map),"3_EntranceExit");
     }
     private void SortToList(DungeonGenerator.Cell root)
     {
@@ -99,40 +83,6 @@ public class DungeonGenerator
         }
     }
 
-    private void CreateEntranceExit()
-    {
-        Cell? start = null;
-        Cell? end = null;
-        int distance = 0;
-        //Find the two furthest rooms and place entrance and exit there
-        foreach (Cell outer in _cells)
-        {
-            foreach (Cell inner in _cells)
-            {
-                if (MST.GetDistance(outer, inner) >= distance)
-                {
-                    start = outer;
-                    end = inner;
-                    distance = (int)MST.GetDistance(outer, inner);
-                }
-            }
-        }
-        if (start != null && end != null)
-        {
-            // Place entrance and exit in the middle of the rooms
-            int startX = (start.x1 + start.x2) / 2;
-            int startY = (start.y1 + start.y2) / 2;
-            int endX = (end.x1 + end.x2) / 2;
-            int endY = (end.y1 + end.y2) / 2;
-            Tile entrance = new Tile(startX, startY, TileType.Entrance, start);
-            Tile exit = new Tile(endX, endY, TileType.Exit, end);
-            _tiles.Add(entrance);
-            _tiles.Add(exit);
-            
-            Console.WriteLine("ENTRANCE PLACED: " + entrance.x + "," + entrance.y);
-            Console.WriteLine("EXIT PLACED: " + exit.x + "," + exit.y);
-        }
-    }
     
     public void BuildMap()
     {
@@ -143,7 +93,7 @@ public class DungeonGenerator
             List<Tile> column = new List<Tile>(new Tile[GameSettings.Dungeon.MapHeight]); // Creates a row of 0s
             for (int j = 0; j < column.Count; j++)
             {
-                column[j] = new Tile(x, j, TileType.Empty, null);
+                column[j] = new Tile(x, j, Models.TileType.Empty);
             }
             _map.Add(column);
         }
@@ -153,7 +103,7 @@ public class DungeonGenerator
             {
                 for (int k = _cells[i].y1; k < _cells[i].y2; k++)
                 {
-                    _map[j][k] = new Tile(j,k,TileType.Floor, _cells[i]);
+                    _map[j][k] = new Tile(j,k,Models.TileType.Floor);
                 }
             }
         }
@@ -164,16 +114,16 @@ public class DungeonGenerator
             {
                 for (int k = _corridors[i].y1; k < _corridors[i].y2; k++)
                 {
-                    _map[j][k] = new Tile(j,k,TileType.Corridor, _corridors[i]);
+                    _map[j][k] = new Tile(j,k,Models.TileType.Corridor);
                 }
             }
         }
 
         foreach (Tile tile in _tiles)
         {
-            _map[tile.x][tile.y] = new Tile(tile.x, tile.y, tile.type, tile.parent);
+            _map[tile.x][tile.y] = new Tile(tile.x, tile.y, tile.type);
         }
     }
 
-
+    public List<List<Tile>> GetMap() { return _map; }
 }
