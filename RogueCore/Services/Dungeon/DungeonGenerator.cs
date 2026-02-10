@@ -64,8 +64,9 @@ public class DungeonGenerator
         _corridors = _mst.CreateCorridors(_cells);
         BuildMap();
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "2_MST");
-        
         CreateEntranceExit();
+        
+        BuildMap();
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map),"3_EntranceExit");
     }
     private void SortToList(DungeonGenerator.Cell root)
@@ -167,7 +168,11 @@ public class DungeonGenerator
                 }
             }
         }
-        
+
+        foreach (Tile tile in _tiles)
+        {
+            _map[tile.x][tile.y] = new Tile(tile.x, tile.y, tile.type, tile.parent);
+        }
     }
 
 
