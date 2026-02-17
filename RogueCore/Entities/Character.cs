@@ -5,14 +5,20 @@ public abstract class Character
     protected int _x;
     protected int _y;
     protected int _maxHealth;
-    protected int _health;
+    public int _health;
     
     public void Move(int dx, int dy)
     {
         _x += dx;
         _y += dy;
     }
-
+    
+    public void SetPosition(int x, int y)
+    {
+        _x = x;
+        _y = y;
+    }
+    
     public void AddHealth(int health)
     {
         health = Math.Clamp(_health + health, 0, _maxHealth);

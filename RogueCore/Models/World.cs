@@ -1,4 +1,5 @@
 using RogueCore.Entities;
+using RogueCore.Helpers;
 using RogueCore.Services.Dungeon;
 
 namespace RogueCore.Models;
@@ -20,8 +21,25 @@ public class World
         Rooms = _mapGenerator.GetRooms();
         Corridors = _mapGenerator.GetCorridors();
         Player = new Player();
+        Player.SetPosition(_mapGenerator.GetInteriorDesign().GetEntrance().x, _mapGenerator.GetInteriorDesign().GetEntrance().y);
     }
     
-    
-    
+    public bool TryMovePlayer(int dx, int dy)
+    {
+        int newX = Player.GetX() + dx;
+        int newY = Player.GetY() + dy;
+
+        if (IsWalkable(newX, newY))
+        {
+            Player.Move(dx, dy);
+            return true;
+        }
+        return false;
+    }
+
+    private bool IsWalkable(int newX, int newY)
+    {
+        if(Map[newX][newY].type != TileType.Empty) return true;
+        return false;
+    }
 }

@@ -8,6 +8,8 @@ public class InteriorDesign
     private Random _random;
     private List<List<Tile>> _map;
     private List<Room> _rooms;
+    private Tile _entrance;
+    private Tile _exit;
 
     public InteriorDesign(Random random)
     { 
@@ -18,6 +20,16 @@ public class InteriorDesign
     {
         _map = map;
         _rooms = rooms;
+    }
+
+    public Tile GetEntrance()
+    {
+        return _entrance;
+    }
+
+    public Tile GetExit()
+    {
+        return _exit;
     }
     
     public void CreateEntranceExit()
@@ -49,7 +61,8 @@ public class InteriorDesign
             Tile exit = new Tile(endX, endY, Models.TileType.Exit);
             _map[startX][startY] = entrance;
             _map[endX][endY] = exit;
-            
+            _entrance = entrance;
+            _exit = exit;
             Console.WriteLine("ENTRANCE PLACED: " + entrance.x + "," + entrance.y);
             Console.WriteLine("EXIT PLACED: " + exit.x + "," + exit.y);
         }

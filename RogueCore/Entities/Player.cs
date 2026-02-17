@@ -4,7 +4,7 @@ namespace RogueCore.Entities;
 
 public class Player : Character
 {
-    private int numOfCoins;
+    public int numOfCoins;
     public Player()
     {
         _maxHealth = GameSettings.Player.MaxHealth;
@@ -15,7 +15,7 @@ public class Player : Character
     {
         numOfCoins += amount;
     }
-    
+
     public override void Die()
     {
         throw new NotImplementedException();

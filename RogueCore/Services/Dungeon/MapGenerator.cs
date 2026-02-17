@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Microsoft.Maui.Storage;
 using RogueCore.Models;
 
 namespace RogueCore.Services.Dungeon;
@@ -18,6 +19,11 @@ public class MapGenerator
         _dungeonGenerator = new DungeonGenerator(_random);
         _interiorDesign = new InteriorDesign(_random);
     }
+
+    public InteriorDesign GetInteriorDesign()
+    {
+        return _interiorDesign;
+    }
     
     public void GenerateMap()
     {
@@ -30,6 +36,7 @@ public class MapGenerator
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "3_EntranceExit");
         _interiorDesign.PlaceCoins();
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "4_Coins");
+
         
     }
     
@@ -85,6 +92,8 @@ public class MapGenerator
             _corridors.Add(corridor);
         }
     }
+    
+
     
     public List<List<Tile>> GetMap() => _map;
     public List<Room> GetRooms() => _rooms;

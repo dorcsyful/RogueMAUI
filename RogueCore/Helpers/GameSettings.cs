@@ -6,16 +6,16 @@ namespace RogueCore
         {
             public static class Dungeon
             {
-                public const int MapWidth = 500;
-                public const int MapHeight = 500;
+                public const int MapWidth = 100;
+                public const int MapHeight = 100;
         
-                public const int MinRoomWidth = 100;
-                public const int MinRoomHeight = 100;
+                public const int MinRoomWidth = 10;
+                public const int MinRoomHeight = 10;
                 
-                public const int MaxRoomNum = 20;
+                public const int MaxRoomNum = 5;
                 
-                public const int MaxRoomWidth = 200;
-                public const int MaxRoomHeight = 200;
+                public const int MaxRoomWidth = 20;
+                public const int MaxRoomHeight = 20;
 
                 public const float MinShrink = 0.5f;
                 public const float MaxShrink = 0.8f;
@@ -23,9 +23,9 @@ namespace RogueCore
 
             public static class Interior
             {
-                public const int MaxNumOfCoins = 40;
+                public const int MaxNumOfCoins = 10;
                 public const int NumOfCoinsPerRoom = 5;
-                public const int MaxNumOfEnemies = 40;
+                public const int MaxNumOfEnemies = 10;
                 public const int MaxChasingEnemiesPerRoom = 3;
                 public const int MaxPatrollingEnemiesPerRoom = 1;
                 public const int MaxObservingEnemiesPerRoom = 3;

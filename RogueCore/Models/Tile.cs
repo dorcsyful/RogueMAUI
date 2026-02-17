@@ -9,7 +9,9 @@ public enum TileType
     Corridor = 2,
     Entrance = 3,
     Exit = 4,
-    Coin = 5
+    Coin = 5,
+    HealthPotion = 6,
+    PoisonPotion = 7,
 }
 
 public class Tile

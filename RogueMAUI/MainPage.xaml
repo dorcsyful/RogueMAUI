@@ -30,6 +30,12 @@
                 SemanticProperties.Hint="Counts the number of times you click"
                 Clicked="OnCounterClicked"
                 HorizontalOptions="Fill" />
+            <Button
+                x:Name="GoToGameBtn"
+                Text="Go to Game Page"
+                SemanticProperties.Hint="Redirects you to the game page"
+                Clicked="OnStartGameClicked"
+                HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
 

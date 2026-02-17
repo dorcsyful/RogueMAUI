@@ -17,7 +17,7 @@ public static class SnapshotService
     {
         int width = map.Count;
         int height = map[0].Count;
-        int scale = 5; // Make each tile 10x10 pixels
+        int scale = 1; // Make each tile 10x10 pixels
 
         // 1. Create the image in memory
         using Image<Rgba32> image = new Image<Rgba32>(width * scale, height * scale);
@@ -52,6 +52,7 @@ public static class SnapshotService
 
         // 3. Save to the app's cache directory
         string path = "Snapshots/ " + fileName+".bmp";
+        if(Directory.Exists("Snapshots") == false) Directory.CreateDirectory("Snapshots");
         image.SaveAsPng(path);
         
         // This line is great for debugging in Rider's terminal

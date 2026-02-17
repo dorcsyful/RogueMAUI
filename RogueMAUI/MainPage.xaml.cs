@@ -20,4 +20,10 @@ public partial class MainPage : ContentPage
 
 		SemanticScreenReader.Announce(CounterBtn.Text);
 	}
+	
+	private async void OnStartGameClicked(object sender, EventArgs e)
+	{
+		// Navigate using the route name you registered
+		await Shell.Current.GoToAsync("GamePage");
+	}
 }
