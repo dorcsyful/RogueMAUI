@@ -12,6 +12,7 @@ public enum TileType
     Coin = 5,
     HealthPotion = 6,
     PoisonPotion = 7,
+    Space = 8
 }
 
 public class Tile

@@ -12,4 +12,8 @@
       <PackageReference Include="SkiaSharp.Views.Maui.Controls" Version="3.119.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Input\" />
+    </ItemGroup>
+
 </Project>

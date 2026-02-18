@@ -1,3 +1,9 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Storage;
+using RogueCore.Models;
 using RogueMAUI.Services;
 using SkiaSharp;
 using SKPaintSurfaceEventArgs = SkiaSharp.Views.Maui.SKPaintSurfaceEventArgs;
@@ -72,15 +78,23 @@ public partial class GamePage : ContentPage
                 int clampedX = Math.Max(0, Math.Min(world.Map.Count - 1, x));
                 int clampedY = Math.Max(0, Math.Min(world.Map[clampedX].Count - 1, y));
                 int[] baseCoords = Graphics.TileCoordinates.GetTileBaseCoordinates(world.Map[clampedX][clampedY].type);
+                if(x < 0 || x>world.Map.Count || y < 0 || y>world.Map.Count) baseCoords = Graphics.TileCoordinates.GetTileBaseCoordinates(TileType.Space);
+                int[] decorationCoords = Graphics.TileCoordinates.GetDecorationTileCoordinates(world.Map[clampedX][clampedY].type);
                 var src = new SKRect(baseCoords[0], baseCoords[1], baseCoords[0] + 16, baseCoords[1] + 16);
+                var src_decoration = new SKRect(decorationCoords[0], decorationCoords[1], decorationCoords[0] + 16, decorationCoords[1] + 16);
                 var dest = new SKRect((clampedX - startX) * 16, (clampedY - startY) * 16, (clampedX - startX + 1) * 16, (clampedY - startY + 1) * 16);
                 canvas.DrawBitmap(_tileSheet, src, dest, paint);
+                canvas.DrawBitmap(_tileSheet, src_decoration, dest, paint);
             }
         }
 
         var playerCoords = Graphics.TileCoordinates.Player.Idle;
+
+        float playerScreenX = (world.Player.GetX() - startX) * 16;
+        float playerScreenY = (world.Player.GetY() - startY) * 16;
+
         canvas.DrawBitmap(_tileSheet,
             new SKRect(playerCoords.x, playerCoords.y, playerCoords.x + 16, playerCoords.y + 16),
-            new SKRect(48, 48, 64, 64), paint);
-    }
+            new SKRect(playerScreenX, playerScreenY, playerScreenX + 16, playerScreenY + 16), 
+            paint);    }
 }

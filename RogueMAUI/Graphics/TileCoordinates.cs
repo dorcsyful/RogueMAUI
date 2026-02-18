@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RogueCore.Models;
 
 namespace RogueMAUI.Graphics;
@@ -18,6 +19,8 @@ public static class TileCoordinates
         { TileType.Coin, (48, 16) },
         {TileType.HealthPotion, (64, 0) },
         { TileType.PoisonPotion , (64, 32) },
+        {TileType.Space, (80, 0)},
+
     };
     
     public static int[] GetTileBaseCoordinates(TileType type)
@@ -34,7 +37,7 @@ public static class TileCoordinates
         if(type == TileType.Coin) return new int[] {Tiles[TileType.Coin].x, Tiles[TileType.Coin].y};
         if(type == TileType.HealthPotion) return new int[] {Tiles[TileType.HealthPotion].x, Tiles[TileType.HealthPotion].y};
         if(type == TileType.PoisonPotion) return new int[] {Tiles[TileType.PoisonPotion].x, Tiles[TileType.PoisonPotion].y};
-        else return new int[] {Tiles[TileType.Floor].x, Tiles[TileType.Floor].y};
+        else return new int[] {Tiles[TileType.Space].x, Tiles[TileType.Space].y};
     }
     
     // Player sprite coordinates

@@ -1,9 +1,5 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
-using RogueCore.Input;
+using System;
 using RogueCore.Models;
-using RogueCore.Services.Dungeon;
 using RogueMAUI.Services;
 
 namespace RogueMAUI.ViewModels;
@@ -16,6 +12,7 @@ public class GameViewModel
     {
         Initialize();    
         InputService = inputService;
+        CurrentWorld = new World();
     }
     
     public void Update()
@@ -34,5 +31,4 @@ public class GameViewModel
         CurrentWorld = new World();
     }
 
-    
 }
