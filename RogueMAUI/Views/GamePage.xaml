@@ -13,23 +13,23 @@
         <controls:SKCanvasView x:Name="GameCanvas"
                            Grid.Row="0"
                            PaintSurface="OnCanvasPaint"
-                           IgnorePixelScaling="True">
+                           IgnorePixelScaling="False">
         </controls:SKCanvasView>
 
-        <VerticalStackLayout Grid.Row="1"
-                             BackgroundColor="#222222"
-                             Padding="10">
-            <Label Text="PLAYER STATS" FontSize="20" TextColor="Gold" HorizontalOptions="Center"/>
-            <HorizontalStackLayout Spacing="20" HorizontalOptions="Center">
-                <Label Text="{Binding Health, StringFormat='HP: {0}'}" TextColor="Red" />
-                <Label Text="{Binding CoinCount, StringFormat='Gold: {0}'}" TextColor="Yellow" />
-                <Button Text="⏸"
-                        Command="{Binding PauseCommand}"
-                        BackgroundColor="#444444"
-                        TextColor="White"
-                        WidthRequest="50"
-                        HeightRequest="40" />
-            </HorizontalStackLayout>
-        </VerticalStackLayout>
+        <!-- <VerticalStackLayout Grid.Row="1" -->
+        <!--                      BackgroundColor="#222222" -->
+        <!--                      Padding="10"> -->
+        <!--     <Label Text="PLAYER STATS" FontSize="20" TextColor="Gold" HorizontalOptions="Center"/> -->
+        <!--     <HorizontalStackLayout Spacing="20" HorizontalOptions="Center"> -->
+        <!--         <Label Text="{Binding Health, StringFormat='HP: {0}'}" TextColor="Red" /> -->
+        <!--         <Label Text="{Binding CoinCount, StringFormat='Gold: {0}'}" TextColor="Yellow" /> -->
+        <!--         <Button Text="⏸" -->
+        <!--                 Command="{Binding PauseCommand}" -->
+        <!--                 BackgroundColor="#444444" -->
+        <!--                 TextColor="White" -->
+        <!--                 WidthRequest="50" -->
+        <!--                 HeightRequest="40" /> -->
+        <!--     </HorizontalStackLayout> -->
+        <!-- </VerticalStackLayout> -->
     </Grid>
 </ContentPage>

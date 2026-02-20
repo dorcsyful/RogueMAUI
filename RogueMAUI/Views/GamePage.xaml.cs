@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Storage;
+using RogueCore.Helpers;
 using RogueCore.Models;
 using RogueMAUI.Services;
 using SkiaSharp;
@@ -39,7 +40,7 @@ public partial class GamePage : ContentPage
                 GameCanvas.InvalidateSurface(); 
             });
 
-            await Task.Delay(16);
+            await Task.Delay(16); // Slow down temporarily for debugging
         }
     }
     
@@ -51,50 +52,88 @@ public partial class GamePage : ContentPage
 
     private void OnCanvasPaint(object sender, SKPaintSurfaceEventArgs e)
     {
-        if (_viewModel.CurrentWorld == null) return;
-
-        SKImageInfo info = e.Info;
-        SKSurface surface = e.Surface;
-        SKCanvas canvas = surface.Canvas;
-
-        canvas.Clear(SKColors.Black);
-
-        float scale = Math.Min((float)info.Width / 128, (float)info.Height / 128);
-        float tx = (info.Width - 128 * scale) / 2;
-        float ty = (info.Height - 128 * scale) / 2;
-
-        canvas.Translate(tx, ty);
-        canvas.Scale(scale);
-
-        var paint = new SKPaint { FilterQuality = SKFilterQuality.None };
-        var world = _viewModel.CurrentWorld;
-        int startX = world.Player.GetX() - 4;
-        int startY = world.Player.GetY() - 4;
-
-        for (int x = startX; x < startX + 8; x++)
+        try
         {
-            for (int y = startY; y < startY + 8; y++)
+            SKImageInfo info = e.Info;
+            SKSurface surface = e.Surface;
+            SKCanvas canvas = surface.Canvas;
+
+            canvas.Clear(SKColors.Black);
+
+            var paint = new SKPaint { FilterQuality = SKFilterQuality.None };
+            var world = _viewModel.CurrentWorld;
+
+            // (128x128 pixels = 8x8 tiles)
+            float viewWidth = 128.0f;
+            float viewHeight = 128.0f;
+
+
+            float viewCenterX = world.Player.GetVisualX() * 16.0f;
+            float viewCenterY = world.Player.GetVisualY() * 16.0f;
+
+            // Calculate top-left corner of view window
+            float viewLeft = viewCenterX - viewWidth / 2.0f;
+            float viewTop = viewCenterY - viewHeight / 2.0f;
+
+            // Scale to fit canvas while maintaining square aspect
+            float canvasWidth = info.Width;
+            float canvasHeight = info.Height;
+            float scale = Math.Min(canvasWidth / viewWidth, canvasHeight / viewHeight);
+
+            // Calculate offsets to center the scaled view on canvas
+            float scaledViewSize = viewWidth * scale;
+            float tx = (canvasWidth - scaledViewSize) / 2.0f;
+            float ty = (canvasHeight - scaledViewSize) / 2.0f;
+
+            // Apply transformations: translate to center, scale up, then translate to view position
+            canvas.Translate(tx, ty);
+            canvas.Scale(scale);
+            canvas.Translate(-viewLeft, -viewTop);
+
+            // Calculate which tiles are visible in the view window
+            int startX = Math.Max(0, (int)Math.Floor(viewLeft / 16.0f));
+            int startY = Math.Max(0, (int)Math.Floor(viewTop / 16.0f));
+            int endX = Math.Min(100, (int)Math.Ceiling((viewLeft + viewWidth) / 16.0f));
+            int endY = Math.Min(100, (int)Math.Ceiling((viewTop + viewHeight) / 16.0f));
+
+            // Only render visible tiles
+            for (int x = startX; x < endX; x++)
             {
-                int clampedX = Math.Max(0, Math.Min(world.Map.Count - 1, x));
-                int clampedY = Math.Max(0, Math.Min(world.Map[clampedX].Count - 1, y));
-                int[] baseCoords = Graphics.TileCoordinates.GetTileBaseCoordinates(world.Map[clampedX][clampedY].type);
-                if(x < 0 || x>world.Map.Count || y < 0 || y>world.Map.Count) baseCoords = Graphics.TileCoordinates.GetTileBaseCoordinates(TileType.Space);
-                int[] decorationCoords = Graphics.TileCoordinates.GetDecorationTileCoordinates(world.Map[clampedX][clampedY].type);
-                var src = new SKRect(baseCoords[0], baseCoords[1], baseCoords[0] + 16, baseCoords[1] + 16);
-                var src_decoration = new SKRect(decorationCoords[0], decorationCoords[1], decorationCoords[0] + 16, decorationCoords[1] + 16);
-                var dest = new SKRect((clampedX - startX) * 16, (clampedY - startY) * 16, (clampedX - startX + 1) * 16, (clampedY - startY + 1) * 16);
-                canvas.DrawBitmap(_tileSheet, src, dest, paint);
-                canvas.DrawBitmap(_tileSheet, src_decoration, dest, paint);
+                for (int y = startY; y < endY; y++)
+                {
+                    var tile = world.Map[x][y];
+                    int[] baseCoords = Graphics.TileCoordinates.GetTileBaseCoordinates(tile.type);
+                    int[] decorCoords = Graphics.TileCoordinates.GetDecorationTileCoordinates(tile.type);
+
+                    var dest = new SKRect(
+                        x * 16.0f,
+                        y * 16.0f,
+                        (x + 1) * 16.0f,
+                        (y + 1) * 16.0f
+                    );
+
+                    var src = new SKRect(baseCoords[0], baseCoords[1], baseCoords[0] + 16, baseCoords[1] + 16);
+                    var srcdecor = new SKRect(decorCoords[0], decorCoords[1], decorCoords[0] + 16, decorCoords[1] + 16);
+                    canvas.DrawBitmap(_tileSheet, src, dest, paint);
+                    
+                    canvas.DrawBitmap(_tileSheet, srcdecor, dest, paint);
+                }
             }
+            
+            var pCoords = Graphics.TileCoordinates.Player.Idle;
+        
+            var pSrc = new SKRect(pCoords.x, pCoords.y, pCoords.x + 16, pCoords.y + 16);
+            float left = viewLeft + 4 * 16;
+            float f = viewLeft + 16 * 4;
+            var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
+        
+            canvas.DrawBitmap(_tileSheet, pSrc, pDest, paint);
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Paint error: {ex.Message}");
+        }
+    
 
-        var playerCoords = Graphics.TileCoordinates.Player.Idle;
-
-        float playerScreenX = (world.Player.GetX() - startX) * 16;
-        float playerScreenY = (world.Player.GetY() - startY) * 16;
-
-        canvas.DrawBitmap(_tileSheet,
-            new SKRect(playerCoords.x, playerCoords.y, playerCoords.x + 16, playerCoords.y + 16),
-            new SKRect(playerScreenX, playerScreenY, playerScreenX + 16, playerScreenY + 16), 
-            paint);    }
+    }
 }
