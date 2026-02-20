@@ -40,7 +40,7 @@ public partial class GamePage : ContentPage
                 GameCanvas.InvalidateSurface(); 
             });
 
-            await Task.Delay(16); // Slow down temporarily for debugging
+            await Task.Delay(16); 
         }
     }
     
@@ -57,7 +57,7 @@ public partial class GamePage : ContentPage
             SKImageInfo info = e.Info;
             SKSurface surface = e.Surface;
             SKCanvas canvas = surface.Canvas;
-
+            
             canvas.Clear(SKColors.Black);
 
             var paint = new SKPaint { FilterQuality = SKFilterQuality.None };
@@ -66,16 +66,14 @@ public partial class GamePage : ContentPage
             // (128x128 pixels = 8x8 tiles)
             float viewWidth = 128.0f;
             float viewHeight = 128.0f;
-
-
+            
             float viewCenterX = world.Player.GetVisualX() * 16.0f;
             float viewCenterY = world.Player.GetVisualY() * 16.0f;
 
             // Calculate top-left corner of view window
             float viewLeft = viewCenterX - viewWidth / 2.0f;
             float viewTop = viewCenterY - viewHeight / 2.0f;
-
-            // Scale to fit canvas while maintaining square aspect
+            
             float canvasWidth = info.Width;
             float canvasHeight = info.Height;
             float scale = Math.Min(canvasWidth / viewWidth, canvasHeight / viewHeight);
@@ -84,8 +82,11 @@ public partial class GamePage : ContentPage
             float scaledViewSize = viewWidth * scale;
             float tx = (canvasWidth - scaledViewSize) / 2.0f;
             float ty = (canvasHeight - scaledViewSize) / 2.0f;
-
+            float gameSize = 128f * scale;
+            SKRect gameRect = SKRect.Create(tx, ty, gameSize, gameSize);
             // Apply transformations: translate to center, scale up, then translate to view position
+            canvas.Save(); // Save state before clipping/translating
+            canvas.ClipRect(gameRect);
             canvas.Translate(tx, ty);
             canvas.Scale(scale);
             canvas.Translate(-viewLeft, -viewTop);
@@ -95,7 +96,6 @@ public partial class GamePage : ContentPage
             int startY = Math.Max(0, (int)Math.Floor(viewTop / 16.0f));
             int endX = Math.Min(100, (int)Math.Ceiling((viewLeft + viewWidth) / 16.0f));
             int endY = Math.Min(100, (int)Math.Ceiling((viewTop + viewHeight) / 16.0f));
-
             // Only render visible tiles
             for (int x = startX; x < endX; x++)
             {
@@ -115,7 +115,6 @@ public partial class GamePage : ContentPage
                     var src = new SKRect(baseCoords[0], baseCoords[1], baseCoords[0] + 16, baseCoords[1] + 16);
                     var srcdecor = new SKRect(decorCoords[0], decorCoords[1], decorCoords[0] + 16, decorCoords[1] + 16);
                     canvas.DrawBitmap(_tileSheet, src, dest, paint);
-                    
                     canvas.DrawBitmap(_tileSheet, srcdecor, dest, paint);
                 }
             }
@@ -128,12 +127,14 @@ public partial class GamePage : ContentPage
             var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
         
             canvas.DrawBitmap(_tileSheet, pSrc, pDest, paint);
+            canvas.Restore();
+
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Paint error: {ex.Message}");
         }
-    
+
 
     }
 }
