@@ -18,7 +18,7 @@ public abstract class Character
     private int _directionX = 1, _directionY = 1;
     private int frameCounter = 0;
     public float frameCounterProgress = 0f;
-    public float MoveSpeed = 1.0f; // Tiles per second
+    public float MoveSpeed = 5.0f; // Tiles per second
     
     public void Move(int dx, int dy)
     {
@@ -44,85 +44,111 @@ public abstract class Character
 
     public abstract void Die();
     
-    public void Update(float deltaTime, float inputX, float inputY, Tile nextTile)
+    public void Update(float deltaTime, float inputX, float inputY, List<List<Tile>> map )
     {
-
-        if ((inputX != 0 || inputY != 0))
+        if (!_isMoving)
         {
-            if(!_isMoving)  StartMove(nextTile);
-            else
+            if (inputX != 0 || inputY != 0)
             {
-                if (_moveProgress >= 0.8f) StartMove(nextTile); // Allow changing direction mid-move after halfway point
-                else ContinueMove(deltaTime);
+                // Determine direction 
+                int dx = inputX > 0 ? 1 : (inputX < 0 ? -1 : 0);
+                int dy = inputY > 0 ? 1 : (inputY < 0 ? -1 : 0);
+                _directionX = dx != 0 ? Math.Sign(dx) : _directionX;
+                _directionY = dy != 0 ? Math.Sign(dy) : _directionY;
+                StartMove(dx, dy, map);
             }
         }
         else
         {
-            if(_isMoving) ContinueMove(deltaTime);
+            ContinueMove(deltaTime, inputX, inputY, map);
         }
-        
-        // if (!_isMoving)
-        // {
-        //     // Only start moving if there is input and the target is walkable
-        //     if (inputX != 0 || inputY != 0)
-        //     {
-        //         if(inputX != 0) _directionX = (int)Math.Sign(inputX);
-        //         _directionY = (int)Math.Sign(inputY);
-        //         StartMove(nextTile);
-        //     }
-        // }
-        // else
-        // {
-        //     ContinueMove(deltaTime);
-        // }
+        UpdateAnimation(deltaTime);
     }
-
-    private void StartMove(Tile nextTile)
+    private void StartMove(int dx, int dy, List<List<Tile>> map)
     {
-        if (nextTile.type != TileType.Empty)
+        int nextX = _x + dx;
+        int nextY = _y + dy;
+
+        if (IsPathClear(nextX, nextY, map))
         {
-            _targetX = nextTile.x;
-            _targetY = nextTile.y;
+            _targetX = nextX;
+            _targetY = nextY;
             _isMoving = true;
             _moveProgress = 0f;
         }
     }
 
-    private void ContinueMove(float deltaTime)
+    private bool IsPathClear(int targetX, int targetY, List<List<Tile>> map)
+    {
+        if (targetX < 0 || targetY < 0 || targetX >= map.Count || targetY >= map[0].Count) 
+            return false;
+
+        if (map[targetX][targetY].type == TileType.Empty) 
+            return false;
+
+        if (targetX != _x && targetY != _y)
+        {
+            if (map[targetX][_y].type == TileType.Empty || map[_x][targetY].type == TileType.Empty)
+                return false;
+        }
+
+        return true;
+    }
+    private void ContinueMove(float deltaTime, float inputX, float inputY, List<List<Tile>> map)
     {
         _moveProgress += deltaTime * MoveSpeed;
-        if (_moveProgress > 0.8)
+
+        if (_moveProgress >= 1.0f)
         {
             _x = _targetX;
             _y = _targetY;
+            float remainder = _moveProgress - 1.0f;
 
-        }
-        if (_moveProgress >= 1.0f)
-        {
-            frameCounter = -1;
-            // Movement complete: Snap to target
-            _visual_x = _x;
-            _visual_y = _y;
-            _isMoving = false;
-            _moveProgress = 0f;
-        }
-        else
-        {
-            if(frameCounterProgress > 0.016 *5) // 5 frames per tile at 60fps
+            int dx = inputX > 0 ? 1 : (inputX < 0 ? -1 : 0);
+            int dy = inputY > 0 ? 1 : (inputY < 0 ? -1 : 0);
+
+            if ((dx != 0 || dy != 0) && IsPathClear(_x + dx, _y + dy, map))
             {
-                frameCounterProgress = 0f;
-                frameCounter = (frameCounter + 1) % 6; // Loop through 4 frames
+                _targetX = _x + dx;
+                _targetY = _y + dy;
+                _moveProgress = remainder; // Carry the momentum!
+                UpdateVisualPosition();
             }
             else
             {
-                frameCounterProgress += deltaTime;
+                _isMoving = false;
+                _moveProgress = 0f;
+                _visual_x = _x;
+                _visual_y = _y;
             }
-            // Interpolate Visual Position: LERP(start, end, progress)
-            _visual_x = _x + (_targetX - _x) * _moveProgress;
-            _visual_y = _y + (_targetY - _y) * _moveProgress;
+        }
+        else
+        {
+            UpdateVisualPosition();
         }
     }
+    private void UpdateVisualPosition()
+    {
+        _visual_x = _x + (_targetX - _x) * _moveProgress;
+        _visual_y = _y + (_targetY - _y) * _moveProgress;
+    }    
     
+    private void UpdateAnimation(float deltaTime)
+    {
+        if (_isMoving)
+        {
+            frameCounterProgress += deltaTime * MoveSpeed;
+            if (frameCounterProgress >= 0.2f)
+            {
+                frameCounter = (frameCounter + 1) % 6;
+                frameCounterProgress = 0f;
+            }
+        }
+        else
+        {
+            frameCounter = -1; 
+        }
+    }
     
     public int GetX() => _x;
     public int GetY() => _y;
