@@ -36,7 +36,7 @@ public class MapGenerator
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "3_EntranceExit");
         _interiorDesign.PlaceCoins();
         SnapshotService.SaveMapSnapshot(SnapshotService.ConvertMapToTileTypes(_map), "4_Coins");
-
+        _interiorDesign.PlaceHealthPotions();
         
     }
     

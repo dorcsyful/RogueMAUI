@@ -127,7 +127,6 @@ public partial class GamePage : ContentPage
             float f = viewLeft + 16 * 4;
             var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
             DrawSprite(canvas, pSrc, pDest, 1,0,world.Player.GetDirectionX());
-            //canvas.DrawBitmap(_tileSheet, pSrc, pDest, paint);
             canvas.Restore();
 
         }

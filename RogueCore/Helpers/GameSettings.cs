@@ -29,8 +29,8 @@ namespace RogueCore
                 public const int MaxChasingEnemiesPerRoom = 3;
                 public const int MaxPatrollingEnemiesPerRoom = 1;
                 public const int MaxObservingEnemiesPerRoom = 3;
-                public const int MinFoodPerRoom = 1;
-                public const int MaxFoodPerRoom = 5;
+                public const int NumOfPotionPerRoom = 1;
+                public const int MaxPotionPerRoom = 2;
             }
             
             public static class Player

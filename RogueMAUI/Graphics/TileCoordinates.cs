@@ -17,7 +17,7 @@ public static class TileCoordinates
         { TileType.Entrance, (48, 0) },
         { TileType.Exit, (64, 0) },
         { TileType.Coin, (48, 16) },
-        {TileType.HealthPotion, (64, 0) },
+        {TileType.HealthPotion, (0, 32) },
         { TileType.PoisonPotion , (64, 32) },
         {TileType.Space, (80, 0)},
 

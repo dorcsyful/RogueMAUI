@@ -13,12 +13,12 @@ public abstract class Character
     public int _health;
     
     private bool _isMoving = false;
-    private float _moveProgress = 0f; // 0.0 to 1.0
+    private float _moveProgress = 0f; 
     private int _targetX, _targetY;
     private int _directionX = 1, _directionY = 1;
     private int frameCounter = 0;
     public float frameCounterProgress = 0f;
-    public float MoveSpeed = 5.0f; // Tiles per second
+    public float MoveSpeed = 5.0f; 
     
     public void Move(int dx, int dy)
     {
@@ -43,6 +43,8 @@ public abstract class Character
     }
 
     public abstract void Die();
+
+    protected abstract void CheckTile(Tile tile);
     
     public void Update(float deltaTime, float inputX, float inputY, List<List<Tile>> map )
     {
@@ -64,6 +66,7 @@ public abstract class Character
         }
         UpdateAnimation(deltaTime);
     }
+    
     private void StartMove(int dx, int dy, List<List<Tile>> map)
     {
         int nextX = _x + dx;
@@ -94,6 +97,7 @@ public abstract class Character
 
         return true;
     }
+    
     private void ContinueMove(float deltaTime, float inputX, float inputY, List<List<Tile>> map)
     {
         _moveProgress += deltaTime * MoveSpeed;
@@ -102,6 +106,7 @@ public abstract class Character
         {
             _x = _targetX;
             _y = _targetY;
+            CheckTile(map[_targetX][_targetY]);
             float remainder = _moveProgress - 1.0f;
 
             int dx = inputX > 0 ? 1 : (inputX < 0 ? -1 : 0);
@@ -127,6 +132,7 @@ public abstract class Character
             UpdateVisualPosition();
         }
     }
+    
     private void UpdateVisualPosition()
     {
         _visual_x = _x + (_targetX - _x) * _moveProgress;

@@ -101,6 +101,39 @@ public class InteriorDesign
         }
     }
     
+    public void PlaceHealthPotions()
+    {
+        int min = Math.Min(GameSettings.Interior.MaxPotionPerRoom,
+            GameSettings.Interior.NumOfPotionPerRoom * _rooms.Count);
+        int max = Math.Max(GameSettings.Interior.MaxPotionPerRoom,
+            GameSettings.Interior.NumOfPotionPerRoom * _rooms.Count);
+        
+        int numOfPotion = _random.Next(min, max) / _rooms.Count;
+
+        foreach (Room room in _rooms)
+        {
+            for (int i = 0; i < numOfPotion; i++)
+            {
+                int x = _random.Next(room.x1, room.x2);
+                int y = _random.Next(room.y1, room.y2);
+                if (_map[x][y].type == Models.TileType.Floor)
+                {
+                    _map[x][y] = new Tile(x, y, Models.TileType.HealthPotion);
+                }
+                else
+                {
+                    while (_map[x][y].type != TileType.Floor)
+                    {
+                        x = _random.Next(room.x1, room.x2);
+                        y = _random.Next(room.y1, room.y2);
+                    }
+
+                    _map[x][y] = new Tile(x, y, Models.TileType.HealthPotion);
+                }
+            }
+        }
+    }
+    
     private static float GetDistance(Room a, Room b)
     {
         int ax = (a.x1 + a.x2) / 2;
