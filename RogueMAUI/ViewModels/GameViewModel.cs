@@ -27,7 +27,6 @@ public class GameViewModel
         var (x, y) = InputService.GetMovementVector();
         CurrentWorld.Player.Update(0.016f,x, y, CurrentWorld.Map[(int)(CurrentWorld.Player.GetX() + x)][
             (int)(CurrentWorld.Player.GetY() + y)]);
-        // 3. Camera Follow
         float targetCameraX = CurrentWorld.Player.GetVisualX() - 3.5f; // 3.5 centers the 16px player better in an 8-tile view
         float targetCameraY = CurrentWorld.Player.GetVisualY() - 3.5f;
 

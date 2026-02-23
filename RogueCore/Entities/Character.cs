@@ -15,8 +15,10 @@ public abstract class Character
     private bool _isMoving = false;
     private float _moveProgress = 0f; // 0.0 to 1.0
     private int _targetX, _targetY;
-    
-    public float MoveSpeed = 5.0f; // Tiles per second
+    private int _directionX = 1, _directionY = 1;
+    private int frameCounter = 0;
+    public float frameCounterProgress = 0f;
+    public float MoveSpeed = 1.0f; // Tiles per second
     
     public void Move(int dx, int dy)
     {
@@ -44,18 +46,35 @@ public abstract class Character
     
     public void Update(float deltaTime, float inputX, float inputY, Tile nextTile)
     {
-        if (!_isMoving)
+
+        if ((inputX != 0 || inputY != 0))
         {
-            // Only start moving if there is input and the target is walkable
-            if (inputX != 0 || inputY != 0)
+            if(!_isMoving)  StartMove(nextTile);
+            else
             {
-                StartMove(nextTile);
+                if (_moveProgress >= 0.8f) StartMove(nextTile); // Allow changing direction mid-move after halfway point
+                else ContinueMove(deltaTime);
             }
         }
         else
         {
-            ContinueMove(deltaTime);
+            if(_isMoving) ContinueMove(deltaTime);
         }
+        
+        // if (!_isMoving)
+        // {
+        //     // Only start moving if there is input and the target is walkable
+        //     if (inputX != 0 || inputY != 0)
+        //     {
+        //         if(inputX != 0) _directionX = (int)Math.Sign(inputX);
+        //         _directionY = (int)Math.Sign(inputY);
+        //         StartMove(nextTile);
+        //     }
+        // }
+        // else
+        // {
+        //     ContinueMove(deltaTime);
+        // }
     }
 
     private void StartMove(Tile nextTile)
@@ -72,12 +91,16 @@ public abstract class Character
     private void ContinueMove(float deltaTime)
     {
         _moveProgress += deltaTime * MoveSpeed;
-
-        if (_moveProgress >= 1.0f)
+        if (_moveProgress > 0.8)
         {
-            // Movement complete: Snap to target
             _x = _targetX;
             _y = _targetY;
+
+        }
+        if (_moveProgress >= 1.0f)
+        {
+            frameCounter = -1;
+            // Movement complete: Snap to target
             _visual_x = _x;
             _visual_y = _y;
             _isMoving = false;
@@ -85,6 +108,15 @@ public abstract class Character
         }
         else
         {
+            if(frameCounterProgress > 0.016 *5) // 5 frames per tile at 60fps
+            {
+                frameCounterProgress = 0f;
+                frameCounter = (frameCounter + 1) % 6; // Loop through 4 frames
+            }
+            else
+            {
+                frameCounterProgress += deltaTime;
+            }
             // Interpolate Visual Position: LERP(start, end, progress)
             _visual_x = _x + (_targetX - _x) * _moveProgress;
             _visual_y = _y + (_targetY - _y) * _moveProgress;
@@ -98,4 +130,7 @@ public abstract class Character
     public float GetVisualY() => _visual_y;
     public void SetVisualX(float x) => _visual_x = x;
     public void SetVisualY(float y) => _visual_y = y;
+    public int GetDirectionX() => _directionX;
+    public int GetDirectionY() => _directionY;
+    public int GetActiveFrame() => frameCounter;
 }

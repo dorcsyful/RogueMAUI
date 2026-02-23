@@ -119,14 +119,15 @@ public partial class GamePage : ContentPage
                 }
             }
             
-            var pCoords = Graphics.TileCoordinates.Player.Idle;
+            var pCoords = world.Player.GetActiveFrame() == -1 ? Graphics.TileCoordinates.Player.Idle : Graphics.TileCoordinates.Player.RunAnimation
+                [world.Player.GetActiveFrame()];
         
             var pSrc = new SKRect(pCoords.x, pCoords.y, pCoords.x + 16, pCoords.y + 16);
             float left = viewLeft + 4 * 16;
             float f = viewLeft + 16 * 4;
             var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
-        
-            canvas.DrawBitmap(_tileSheet, pSrc, pDest, paint);
+            DrawSprite(canvas, pSrc, pDest, 1,0,world.Player.GetDirectionX());
+            //canvas.DrawBitmap(_tileSheet, pSrc, pDest, paint);
             canvas.Restore();
 
         }
@@ -134,7 +135,26 @@ public partial class GamePage : ContentPage
         {
             System.Diagnostics.Debug.WriteLine($"Paint error: {ex.Message}");
         }
+    }
+    
+    public void DrawSprite(SKCanvas canvas, SKRect sourceRect, SKRect destination, float scale = 1.0f, float rotationDegrees = 0, float flipX = 1)
+    {
+        canvas.Save();
 
+        float width = sourceRect.Width;
+        float height = sourceRect.Height;
+        canvas.Translate(destination.Left + width / 2, destination.Top + height / 2);
 
+        if (rotationDegrees != 0)
+        {
+            canvas.RotateDegrees(rotationDegrees);
+        }
+
+        canvas.Scale(flipX, 1);
+
+        SKRect destRect = new SKRect(-width / 2, -height / 2, width / 2, height / 2);
+        canvas.DrawBitmap(_tileSheet, sourceRect, destRect);
+
+        canvas.Restore();
     }
 }
