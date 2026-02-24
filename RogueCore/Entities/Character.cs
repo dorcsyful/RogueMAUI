@@ -2,7 +2,7 @@ using RogueCore.Models;
 
 namespace RogueCore.Entities;
 
-public abstract class Character(int x, int y)
+public abstract class Character(int x, int y, bool isPlayer)
 {
     protected int _x = x;
     protected int _y = y;
@@ -19,6 +19,7 @@ public abstract class Character(int x, int y)
     protected int frameCounter = 0;
     public float frameCounterProgress = 0f;
     public float MoveSpeed = 5.0f;
+    public readonly bool IsPlayer;
 
     public void Move(int dx, int dy)
     {
@@ -84,7 +85,8 @@ public abstract class Character(int x, int y)
         if (targetX < 0 || targetY < 0 || targetX >= map.Count || targetY >= map[0].Count) 
             return false;
 
-        if (map[targetX][targetY].type == TileType.Empty) 
+        if (map[targetX][targetY].type == TileType.Empty ||
+            (map[targetX][targetY].character != null && !map[targetX][targetY].character.IsPlayer))
             return false;
 
         if (targetX != _x && targetY != _y)
@@ -106,8 +108,10 @@ public abstract class Character(int x, int y)
         
         if (_moveProgress >= 1.0f)
         {
+            map[_x][_y].character = null;
             _x = _targetX;
             _y = _targetY;
+            map[_x][_y].character = this;
             CheckTile(map[_targetX][_targetY]);
             float remainder = _moveProgress - 1.0f;
 
@@ -167,9 +171,9 @@ public abstract class Character(int x, int y)
         }
     }
     
-    public void Attack(Character target, int damage)
+    public void Attack(Character? target, int damage)
     {
-        target.TakeDamage(damage);
+        target?.TakeDamage(damage);
     }
     
     public int GetX() => _x;

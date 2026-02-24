@@ -7,7 +7,7 @@ public class Enemy : Character
     private Room _room;
     private float attackCooldown = 0f;
 
-    public Enemy(int x, int y, Room room) : base(x, y)
+    public Enemy(int x, int y, Room room) : base(x, y, false)
     {
         _room = room;
     }

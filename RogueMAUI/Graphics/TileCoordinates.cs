@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using RogueCore.Models;
 
 namespace RogueMAUI.Graphics;
@@ -7,7 +6,7 @@ public static class TileCoordinates
 {
     // Each sprite is 16x16 pixels in the tilemap
     public const int SpriteSize = 16;
-    
+
     // Tile coordinates (x, y) in pixels on tilemap.png
     public static readonly Dictionary<TileType, (int x, int y)> Tiles = new()
     {
@@ -17,30 +16,39 @@ public static class TileCoordinates
         { TileType.Entrance, (48, 0) },
         { TileType.Exit, (64, 0) },
         { TileType.Coin, (48, 16) },
-        {TileType.HealthPotion, (0, 32) },
-        { TileType.PoisonPotion , (64, 32) },
-        {TileType.Space, (80, 0)},
+        { TileType.HealthPotion, (0, 32) },
+        { TileType.PoisonPotion, (64, 32) },
+        { TileType.Space, (80, 0) },
 
     };
-    
+
     public static int[] GetTileBaseCoordinates(TileType type)
     {
-        if(type == TileType.Empty) return new int[] {Tiles[TileType.Empty].x, Tiles[TileType.Empty].y};
-        if(type ==TileType.Corridor) return new int[] {Tiles[TileType.Corridor].x, Tiles[TileType.Corridor].y};
-        else return new int[] {Tiles[TileType.Floor].x, Tiles[TileType.Floor].y};
+        if (type == TileType.Empty) return new int[] { Tiles[TileType.Empty].x, Tiles[TileType.Empty].y };
+        if (type == TileType.Corridor) return new int[] { Tiles[TileType.Corridor].x, Tiles[TileType.Corridor].y };
+        else return new int[] { Tiles[TileType.Floor].x, Tiles[TileType.Floor].y };
     }
-    
+
     public static int[] GetDecorationTileCoordinates(TileType type)
     {
-        if(type == TileType.Entrance) return new int[] {Tiles[TileType.Entrance].x, Tiles[TileType.Entrance].y};
-        if(type == TileType.Exit) return new int[] {Tiles[TileType.Exit].x, Tiles[TileType.Exit].y};
-        if(type == TileType.Coin) return new int[] {Tiles[TileType.Coin].x, Tiles[TileType.Coin].y};
-        if(type == TileType.HealthPotion) return new int[] {Tiles[TileType.HealthPotion].x, Tiles[TileType.HealthPotion].y};
-        if(type == TileType.PoisonPotion) return new int[] {Tiles[TileType.PoisonPotion].x, Tiles[TileType.PoisonPotion].y};
-        else return new int[] {Tiles[TileType.Space].x, Tiles[TileType.Space].y};
+        if (type == TileType.Entrance) return new int[] { Tiles[TileType.Entrance].x, Tiles[TileType.Entrance].y };
+        if (type == TileType.Exit) return new int[] { Tiles[TileType.Exit].x, Tiles[TileType.Exit].y };
+        if (type == TileType.Coin) return new int[] { Tiles[TileType.Coin].x, Tiles[TileType.Coin].y };
+        if (type == TileType.HealthPotion)
+            return new int[] { Tiles[TileType.HealthPotion].x, Tiles[TileType.HealthPotion].y };
+        if (type == TileType.PoisonPotion)
+            return new int[] { Tiles[TileType.PoisonPotion].x, Tiles[TileType.PoisonPotion].y };
+        else return new int[] { Tiles[TileType.Space].x, Tiles[TileType.Space].y };
     }
-    
-    // Player sprite coordinates
+
+    public static (int x, int y)[] GetEventCoordinates(EventType eventType)
+    {
+        if (eventType == EventType.ExplosionDeath) return Character.ExplosionAnimation;
+        if(eventType == EventType.SlashAttack) return Character.SlashAttackAnimation;
+        else return new (int x, int y)[0];
+    }
+
+// Player sprite coordinates
     public static class Player
     {
         public static readonly (int x, int y) Idle = (0, 48);
@@ -71,6 +79,26 @@ public static class TileCoordinates
             (48, 80),
             (64, 80),
             (80, 80)
+        };
+    }
+
+    public static class Character
+    {
+        public static readonly (int x, int y)[] SlashAttackAnimation =
+        {
+            (48, 48),
+            (64, 48),
+            (80, 48)
+        };
+        
+        public static readonly (int x, int y)[] ExplosionAnimation =
+        {
+            (0, 112),
+            (16, 112),
+            (32, 112),
+            (48, 112),
+            (64, 112),
+            (80, 112)
         };
     }
 }

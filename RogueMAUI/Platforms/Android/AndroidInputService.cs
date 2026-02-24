@@ -5,4 +5,9 @@ public class AndroidInputService : IInputService
 {
     public float JoystickX, JoystickY;
     public (float X, float Y) GetMovementVector() => (JoystickX, JoystickY);
+    public (float X, float Y)? GetAttackVector()
+    {
+        throw new NotImplementedException();
+    }
+
 }

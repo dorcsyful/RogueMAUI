@@ -32,6 +32,7 @@ namespace RogueCore
                 public const int NumOfPotionPerRoom = 1;
                 public const int MaxPotionPerRoom = 2;
             }
+
             
             public static class Enemy
             {

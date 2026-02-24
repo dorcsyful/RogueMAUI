@@ -155,6 +155,7 @@ public class InteriorDesign
                 if (_map[x][y].type == Models.TileType.Floor)
                 {
                     _enemies.Add(new Enemy(x, y, room));
+                    _map[x][y].character = _enemies.Last();
                 }
                 else
                 {
@@ -165,6 +166,7 @@ public class InteriorDesign
                     }
 
                     _enemies.Add(new Enemy(x, y, room));
+                    _map[x][y].character = _enemies.Last();
                 }
             }
         }

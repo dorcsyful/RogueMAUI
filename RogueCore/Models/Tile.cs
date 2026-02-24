@@ -1,3 +1,4 @@
+using RogueCore.Entities;
 using RogueCore.Services.Dungeon;
 
 namespace RogueCore.Models;
@@ -20,6 +21,7 @@ public class Tile
     public int x,y;
     public Models.TileType type;
     public Room? room; // The room this tile belongs to, if any
+    public Character? character;
     public Tile(int x, int y, Models.TileType type)
     {
         this.x = x;
