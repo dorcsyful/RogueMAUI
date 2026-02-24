@@ -33,9 +33,10 @@ public class World
     {
         for(int i = Events.Count - 1; i >= 0; i--)
         {
-            if (Events[i].Duration < DateTime.Now) 
+            var elapsed = (DateTime.Now - Events[i].StartTime).TotalSeconds;
+            if (elapsed >= Events[i].LifespanSeconds) 
             {
-                //Events.Remove(Events[i]);
+                Events.RemoveAt(i);
             }
         }
     }
@@ -66,19 +67,9 @@ public class World
             Type = EventType.SlashAttack,
             X = x,
             Y = y,
-            Duration = DateTime.Now.AddSeconds(1)
+                LifespanSeconds = 1f
         });
-        int px = Player.GetX();
-        int py = Player.GetY();
 
-        // Calculate distance (including diagonals)
-        int dx = Math.Abs(x - px);
-        int dy = Math.Abs(y - py);
-
-        // If distance is <= 1 in both directions, it's a neighbor (including diagonals)
-        // If you want to exclude diagonals, use: (dx + dy == 1)
-        if (dx <= 1 && dy <= 1 && (dx != 0 || dy != 0))
-        {
             var targetTile = Map[x][y];
         
             // Check if there is an enemy here
@@ -86,6 +77,5 @@ public class World
             {
                 Player.Attack(targetTile.character,10);
             }
-        }
     }
 }

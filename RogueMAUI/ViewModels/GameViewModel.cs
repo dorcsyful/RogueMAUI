@@ -15,8 +15,10 @@ public class GameViewModel
     public float CameraY { get; private set; }
     private float tx, ty, scale;
     private SKBitmap _tileSheet;
+    private float _viewLeft;
+    private float _viewTop;
 
-    
+
     public GameViewModel(IInputService inputService)
     {
         Initialize();    
@@ -29,6 +31,7 @@ public class GameViewModel
     {
         CurrentWorld = new World();
     }
+    
     private void LoadAssets()
     {
         using var stream = FileSystem.OpenAppPackageFileAsync("tilemap.png").Result;
@@ -46,6 +49,31 @@ public class GameViewModel
         CameraX += (targetCameraX - CameraX) * cameraLerpSpeed;
         CameraY += (targetCameraY - CameraY) * cameraLerpSpeed;
         CurrentWorld.Update();
+        
+        var attackVector = InputService.GetAttackVector();
+        if (attackVector.HasValue)
+        {
+            var click = attackVector;
+            if (click == null) return;
+
+            float localX = click.Value.X - tx;
+            float localY = click.Value.Y - ty;
+
+            float gameX = localX / scale;
+            float gameY = localY / scale;
+
+            float worldPixelX = gameX + _viewLeft;
+            float worldPixelY = gameY + _viewTop;
+
+            int clickedTileX = (int)Math.Floor(worldPixelX / 16.0f);
+            int clickedTileY = (int)Math.Floor(worldPixelY / 16.0f);
+
+            if (CheckIfNeighbor(clickedTileX, clickedTileY))
+            {
+                CurrentWorld.PlayerAttack(clickedTileX, clickedTileY);
+                
+            };
+        }
     }
 
     public void Draw(SKPaintSurfaceEventArgs e)
@@ -69,29 +97,29 @@ public class GameViewModel
             float viewCenterY = world.Player.GetVisualY() * 16.0f;
 
             // Calculate top-left corner of view window
-            float viewLeft = viewCenterX - viewWidth / 2.0f;
-            float viewTop = viewCenterY - viewHeight / 2.0f;
+            _viewLeft = viewCenterX - viewWidth / 2.0f;
+            _viewTop = viewCenterY - viewHeight / 2.0f;
             
             float canvasWidth = info.Width;
             float canvasHeight = info.Height;
             scale = Math.Min(canvasWidth / viewWidth, canvasHeight / viewHeight);
 
-            AdjustCanvas(viewWidth, canvasWidth, canvasHeight, canvas, viewLeft, viewTop);
+            AdjustCanvas(viewWidth, canvasWidth, canvasHeight, canvas, _viewLeft, _viewTop);
 
             // Calculate which tiles are visible in the view window
-            int startX = Math.Max(0, (int)Math.Floor(viewLeft / 16.0f));
-            int startY = Math.Max(0, (int)Math.Floor(viewTop / 16.0f));
-            int endX = Math.Min(100, (int)Math.Ceiling((viewLeft + viewWidth) / 16.0f));
-            int endY = Math.Min(100, (int)Math.Ceiling((viewTop + viewHeight) / 16.0f));
+            int startX = Math.Max(0, (int)Math.Floor(_viewLeft / 16.0f));
+            int startY = Math.Max(0, (int)Math.Floor(_viewTop / 16.0f));
+            int endX = Math.Min(100, (int)Math.Ceiling((_viewLeft + viewWidth) / 16.0f));
+            int endY = Math.Min(100, (int)Math.Ceiling((_viewTop + viewHeight) / 16.0f));
             
             DrawTiles(startX, endX, startY, endY, world, canvas, paint);
 
-            DrawPlayer(world, viewLeft, viewTop, canvas);
+            DrawPlayer(world, _viewLeft, _viewTop, canvas);
 
             DrawEnemies(world, startX, endX, startY, endY, canvas);
-            DrawEvents(world, startX, endX, startY, endY, canvas);
             
-            
+             DrawEvents(world, startX, endX, startY, endY, canvas);
+           
             canvas.Restore();
 
         }
@@ -129,12 +157,12 @@ public class GameViewModel
             }
 
             var animation = Graphics.TileCoordinates.Character.ExplosionAnimation;
-            var frame = (DateTime.Now - current.Duration).TotalSeconds / 1.0 * animation.Length; // Assuming 1 second duration for full animation
+            var frame = (DateTime.Now - current.StartTime).TotalSeconds / 1.0 * animation.Length; // Assuming 1 second duration for full animation
             int frameIndex = Math.Min(animation.Length - 1, (int)frame);
             var eCoords = animation[frameIndex];
             var eSrc = new SKRect(eCoords.x, eCoords.y, eCoords.x + 16, eCoords.y + 16);
             float eLeft = (current.X * 16);
-            float eTop = (current.X * 16);
+            float eTop = (current.Y * 16);
             var eDest = new SKRect(eLeft, eTop, eLeft + 16.0f, eTop + 16.0f);
                 
             var directionX = 1;
@@ -222,4 +250,19 @@ public class GameViewModel
         canvas.Restore();
     }
 
+    private bool CheckIfNeighbor(int x, int y)
+    {
+        if(x == CurrentWorld.Player.GetX() && Math.Abs(y - CurrentWorld.Player.GetY()) == 1)
+        {
+            return true;
+        }
+
+        if (y == CurrentWorld.Player.GetY() && Math.Abs(x - CurrentWorld.Player.GetX()) == 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
 }

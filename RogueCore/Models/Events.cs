@@ -9,7 +9,7 @@ public enum EventType
 public class Event
 {
      public EventType Type { get; set; }
-     public DateTime Duration { get; set; }
-     public float X { get; set; }
+     public DateTime StartTime { get; set; } = DateTime.Now;
+     public float LifespanSeconds { get; set; } = 1.0f;     public float X { get; set; }
      public float Y { get; set; }
 }
