@@ -2,24 +2,24 @@ using RogueCore.Models;
 
 namespace RogueCore.Entities;
 
-public abstract class Character
+public abstract class Character(int x, int y)
 {
-    protected int _x;
-    protected int _y;
+    protected int _x = x;
+    protected int _y = y;
 
-    protected float _visual_x;
-    protected float _visual_y;
+    protected float _visual_x = x;
+    protected float _visual_y = y;
     protected int _maxHealth;
     public int _health;
     
-    private bool _isMoving = false;
-    private float _moveProgress = 0f; 
-    private int _targetX, _targetY;
-    private int _directionX = 1, _directionY = 1;
-    private int frameCounter = 0;
+    protected bool _isMoving = false;
+    protected float _moveProgress = 0f; 
+    protected int _targetX, _targetY;
+    protected int _directionX = 1, _directionY = 1;
+    protected int frameCounter = 0;
     public float frameCounterProgress = 0f;
-    public float MoveSpeed = 5.0f; 
-    
+    public float MoveSpeed = 5.0f;
+
     public void Move(int dx, int dy)
     {
         _x += dx;
@@ -55,8 +55,6 @@ public abstract class Character
                 // Determine direction 
                 int dx = inputX > 0 ? 1 : (inputX < 0 ? -1 : 0);
                 int dy = inputY > 0 ? 1 : (inputY < 0 ? -1 : 0);
-                _directionX = dx != 0 ? Math.Sign(dx) : _directionX;
-                _directionY = dy != 0 ? Math.Sign(dy) : _directionY;
                 StartMove(dx, dy, map);
             }
         }
@@ -101,7 +99,11 @@ public abstract class Character
     private void ContinueMove(float deltaTime, float inputX, float inputY, List<List<Tile>> map)
     {
         _moveProgress += deltaTime * MoveSpeed;
+        
+        _directionX = Math.Sign(inputX) != 0 ? Math.Sign(inputX) : _directionX;
+        _directionY = Math.Sign(inputY) != 0 ? Math.Sign(inputY) : _directionY;
 
+        
         if (_moveProgress >= 1.0f)
         {
             _x = _targetX;
@@ -154,6 +156,20 @@ public abstract class Character
         {
             frameCounter = -1; 
         }
+    }
+    
+    public void TakeDamage(int damage)
+    {
+        _health -= damage;
+        if (_health <= 0)
+        {
+            Die();
+        }
+    }
+    
+    public void Attack(Character target, int damage)
+    {
+        target.TakeDamage(damage);
     }
     
     public int GetX() => _x;

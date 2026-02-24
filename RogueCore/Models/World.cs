@@ -10,7 +10,7 @@ public class World
     public List<Room> Rooms;
     public List<Corridor> Corridors;
     public Player Player;
-    
+    public List<Enemy> Enemies;
     private MapGenerator _mapGenerator;
     
     public World()
@@ -20,8 +20,10 @@ public class World
         Map = _mapGenerator.GetMap();
         Rooms = _mapGenerator.GetRooms();
         Corridors = _mapGenerator.GetCorridors();
-        Player = new Player();
+        Player = new Player(_mapGenerator.GetEntranceCoordinates().x, _mapGenerator.GetEntranceCoordinates().y);
         Player.SetPosition(_mapGenerator.GetInteriorDesign().GetEntrance().x, _mapGenerator.GetInteriorDesign().GetEntrance().y);
+        Enemies = _mapGenerator.GetInteriorDesign().GetEnemies();
+        if(Enemies.Count == 0) { throw new Exception("There are no enemies in this map."); }
     }
     
     public bool TryMovePlayer(int dx, int dy)

@@ -1,3 +1,4 @@
+using RogueCore.Entities;
 using RogueCore.Helpers;
 using RogueCore.Models;
 
@@ -8,6 +9,7 @@ public class InteriorDesign
     private Random _random;
     private List<List<Tile>> _map;
     private List<Room> _rooms;
+    private List<Enemy> _enemies;
     private Tile _entrance;
     private Tile _exit;
 
@@ -108,7 +110,7 @@ public class InteriorDesign
         int max = Math.Max(GameSettings.Interior.MaxPotionPerRoom,
             GameSettings.Interior.NumOfPotionPerRoom * _rooms.Count);
         
-        int numOfPotion = _random.Next(min, max) / _rooms.Count;
+        int numOfPotion = Math.Max(1, _random.Next(min, max) / _rooms.Count);
 
         foreach (Room room in _rooms)
         {
@@ -133,6 +135,42 @@ public class InteriorDesign
             }
         }
     }
+    
+    
+    public void PlaceChasingEnemies()
+    {
+        int min = Math.Min(GameSettings.Interior.MaxChasingEnemiesPerRoom,
+            GameSettings.Interior.MaxNumOfEnemies * _rooms.Count);
+        int max = Math.Max(GameSettings.Interior.MaxChasingEnemiesPerRoom,
+            GameSettings.Interior.MaxNumOfEnemies * _rooms.Count);
+        
+        int numOfEnemy = Math.Max(1, _random.Next(min, max) / _rooms.Count);
+        _enemies = new List<Enemy>();
+        foreach (Room room in _rooms)
+        {
+            for (int i = 0; i < numOfEnemy; i++)
+            {
+                int x = _random.Next(room.x1, room.x2);
+                int y = _random.Next(room.y1, room.y2);
+                if (_map[x][y].type == Models.TileType.Floor)
+                {
+                    _enemies.Add(new Enemy(x, y, room));
+                }
+                else
+                {
+                    while (_map[x][y].type != TileType.Floor)
+                    {
+                        x = _random.Next(room.x1, room.x2);
+                        y = _random.Next(room.y1, room.y2);
+                    }
+
+                    _enemies.Add(new Enemy(x, y, room));
+                }
+            }
+        }
+    }
+    
+    public List<Enemy> GetEnemies() => _enemies;
     
     private static float GetDistance(Room a, Room b)
     {

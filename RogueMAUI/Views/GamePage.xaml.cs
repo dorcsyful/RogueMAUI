@@ -127,6 +127,20 @@ public partial class GamePage : ContentPage
             float f = viewLeft + 16 * 4;
             var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
             DrawSprite(canvas, pSrc, pDest, 1,0,world.Player.GetDirectionX());
+            for(int i = 0; i < world.Enemies.Count; i++)
+            {
+                var enemy = world.Enemies[i];
+                // var eCoords = enemy.GetActiveFrame() == -1 ? Graphics.TileCoordinates.Enemy.Idle : Graphics.TileCoordinates.Enemy.RunAnimation
+                //     [enemy.GetActiveFrame()];
+                    var eCoords = Graphics.TileCoordinates.Enemy.Idle;
+                var eSrc = new SKRect(eCoords.x, eCoords.y, eCoords.x + 16, eCoords.y + 16);
+                float eLeft = viewLeft;
+                float eTop = viewTop + (enemy.GetVisualY() * 16);
+                var eDest = new SKRect(eLeft, eTop, eLeft + 16.0f, eTop + 16.0f);
+                var directionX = enemy.GetDirectionX();
+                DrawSprite(canvas, eSrc, eDest, 1,0,directionX);
+            }
+            
             canvas.Restore();
 
         }

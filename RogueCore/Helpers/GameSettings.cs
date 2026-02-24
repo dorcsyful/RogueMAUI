@@ -33,6 +33,12 @@ namespace RogueCore
                 public const int MaxPotionPerRoom = 2;
             }
             
+            public static class Enemy
+            {
+                public const int MaxHealth = 50;
+                public const int Damage = 10;
+            }
+            
             public static class Player
             {
                 public const int MaxHealth = 100;

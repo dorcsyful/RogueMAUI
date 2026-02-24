@@ -6,7 +6,7 @@ namespace RogueCore.Entities;
 public class Player : Character
 {
     public int numOfCoins;
-    public Player()
+    public Player(int x, int y) : base(x, y)
     {
         _maxHealth = GameSettings.Player.MaxHealth;
         _health = _maxHealth;
