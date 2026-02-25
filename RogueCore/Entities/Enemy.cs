@@ -6,7 +6,7 @@ namespace RogueCore.Entities;
 public class Enemy : Character
 {
     private Room _room;
-    private float attackCooldown = 0f;
+    private float attackCooldown = 1f;
 
     public Enemy(int x, int y, Room room) : base(x, y, false)
     {
@@ -16,7 +16,8 @@ public class Enemy : Character
     
     public override void Die()
     {
-        Debug.WriteLine("Enemy died.");
+            _isDead = true;
+            // Additional logic for enemy death (e.g., drop loot, play animation)
     }
 
     protected override void CheckTile(Tile tile)

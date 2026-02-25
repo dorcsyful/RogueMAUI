@@ -36,7 +36,28 @@ public class World
             var elapsed = (DateTime.Now - Events[i].StartTime).TotalSeconds;
             if (elapsed >= Events[i].LifespanSeconds) 
             {
-                Events[i].RemoveEffect(Map[(int)Events[i].X][(int)Events[i].Y].character);
+                Character? character = Map[(int)Events[i].X][(int)Events[i].Y].character;
+                Events[i].RemoveEffect(character);
+                if (Events[i].Type == EventType.SlashAttack && character != null && character.IsDead())
+                {
+                    if (!character.IsPlayer)
+                    {
+                        Events.Add(new Event
+                        {
+                            Type = EventType.ExplosionDeath,
+                            X = Events[i].X,
+                            Y = Events[i].Y,
+                            LifespanSeconds = 1f
+                        });
+                        Enemies.Remove((Enemy)character);
+                        Map[(int)Events[i].X][(int)Events[i].Y].character = null;
+                    }
+                }
+
+                if (Events[i].Type == EventType.ExplosionDeath)
+                {
+                    Map[(int)Events[i].X][(int)Events[i].Y].type = TileType.Coin;
+                }
                 Events.RemoveAt(i);
             }
         }

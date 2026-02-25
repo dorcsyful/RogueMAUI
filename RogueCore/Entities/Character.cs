@@ -21,6 +21,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     public float MoveSpeed = 5.0f;
     public readonly bool IsPlayer;
     private bool _isTakingDamage = false;
+    protected bool _isDead = false;
     public void Move(int dx, int dy)
     {
         _x += dx;
@@ -176,6 +177,8 @@ public abstract class Character(int x, int y, bool isPlayer)
     {
         target?.TakeDamage(damage);
     }
+    
+    public bool IsDead() => _isDead;
     public bool IsTakingDamage() => _isTakingDamage;
     public void DisableDamage() => _isTakingDamage = false;
     public int GetX() => _x;
