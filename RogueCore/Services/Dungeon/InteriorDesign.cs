@@ -151,9 +151,9 @@ public class InteriorDesign
             for (int i = 0; i < numOfEnemy; i++)
             {
                 int tries = 0;
-                int x = _random.Next(room.x1, room.x2);
-                int y = _random.Next(room.y1, room.y2);
-                bool checkTileForEnemyPlacement = CheckTileForEnemyPlacement(x, y, room);
+                int x;
+                int y;
+                bool checkTileForEnemyPlacement;
                 do
                 {
                     x = _random.Next(room.x1, room.x2);
@@ -172,7 +172,7 @@ public class InteriorDesign
                         tries++;
 
                     }
-                } while (!checkTileForEnemyPlacement || tries <= room.Size());
+                } while (!checkTileForEnemyPlacement && tries <= room.Size());
 
             }
         }

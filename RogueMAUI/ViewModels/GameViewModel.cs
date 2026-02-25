@@ -1,5 +1,6 @@
 using System;
 using RogueCore.Models;
+using RogueMAUI.Graphics;
 using RogueMAUI.Services;
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
@@ -156,7 +157,7 @@ public class GameViewModel
                 continue; 
             }
 
-            var animation = Graphics.TileCoordinates.Character.ExplosionAnimation;
+            var animation = TileCoordinates.GetEventCoordinates(current.Type);
             var frame = (DateTime.Now - current.StartTime).TotalSeconds / 1.0 * animation.Length; // Assuming 1 second duration for full animation
             int frameIndex = Math.Min(animation.Length - 1, (int)frame);
             var eCoords = animation[frameIndex];
@@ -165,8 +166,14 @@ public class GameViewModel
             float eTop = (current.Y * 16);
             var eDest = new SKRect(eLeft, eTop, eLeft + 16.0f, eTop + 16.0f);
                 
-            var directionX = 1;
-            DrawSprite(canvas, eSrc, eDest, 1,0,directionX);
+            var directionX = Math.Sign(world.Player.GetX() - current.X) == 0 ? 1 : Math.Sign(world.Player.GetX() - current.X); // Default to facing right if perfectly vertical
+            var directionY = Math.Sign(world.Player.GetY() - current.Y); // Default to facing down if perfectly horizontal
+            float rotation = 0;
+            if (directionY != 0)
+            {
+                rotation = directionY * 90f;
+            }
+            DrawSprite(canvas, eSrc, eDest, 1,rotation,-directionX);
         }
     }
     
@@ -229,7 +236,7 @@ public class GameViewModel
         DrawSprite(canvas, pSrc, pDest, 1,0,world.Player.GetDirectionX());
     }
 
-    private void DrawSprite(SKCanvas canvas, SKRect sourceRect, SKRect destination, float scale = 1.0f, float rotationDegrees = 0, float flipX = 1)
+    private void DrawSprite(SKCanvas canvas, SKRect sourceRect, SKRect destination, float scale = 1.0f, float rotationDegrees = 0, float flipX = 1,float flipY = 1)
     {
         canvas.Save();
 
@@ -242,7 +249,8 @@ public class GameViewModel
             canvas.RotateDegrees(rotationDegrees);
         }
 
-        canvas.Scale(flipX, 1);
+        canvas.Scale(flipX, flipY);
+        
 
         SKRect destRect = new SKRect(-width / 2, -height / 2, width / 2, height / 2);
         canvas.DrawBitmap(_tileSheet, sourceRect, destRect);
