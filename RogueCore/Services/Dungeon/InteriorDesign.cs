@@ -150,26 +150,63 @@ public class InteriorDesign
         {
             for (int i = 0; i < numOfEnemy; i++)
             {
+                int tries = 0;
                 int x = _random.Next(room.x1, room.x2);
                 int y = _random.Next(room.y1, room.y2);
-                if (_map[x][y].type == Models.TileType.Floor)
+                bool checkTileForEnemyPlacement = CheckTileForEnemyPlacement(x, y, room);
+                do
                 {
-                    _enemies.Add(new Enemy(x, y, room));
-                    _map[x][y].character = _enemies.Last();
-                }
-                else
-                {
-                    while (_map[x][y].type != TileType.Floor)
+                    x = _random.Next(room.x1, room.x2);
+                    y = _random.Next(room.y1, room.y2);
+                    checkTileForEnemyPlacement = CheckTileForEnemyPlacement(x, y, room);
+                    if (checkTileForEnemyPlacement)
                     {
-                        x = _random.Next(room.x1, room.x2);
-                        y = _random.Next(room.y1, room.y2);
-                    }
+                        _enemies.Add(new Enemy(x, y, room));
+                        _map[x][y].character = _enemies.Last();
 
-                    _enemies.Add(new Enemy(x, y, room));
-                    _map[x][y].character = _enemies.Last();
+                        break;
+                    }
+                    else
+                    {
+                        
+                        tries++;
+
+                    }
+                } while (!checkTileForEnemyPlacement || tries <= room.Size());
+
+            }
+        }
+
+    }
+
+    private bool CheckTileForEnemyPlacement(int x, int y, Room room)
+    {
+        return NeighbourEmpty(x,y) &&
+                !ContainsPlayer(Math.Clamp(x - 4, room.x1, room.x2), Math.Clamp(y - 4, room.y1, room.y2),
+                    Math.Clamp(x + 4, room.x1, room.x2), Math.Clamp(y + 4, room.y1, room.y2), _entrance.x, _entrance.y);
+    }
+    
+    private bool NeighbourEmpty(int x, int y)
+    {
+        for (int i = -1; i <= 1; i++)
+        {
+            for (int j = -1; j <= 1; j++)
+            {
+                if (x + i >= 0 && x + i < _map.Count && y + j >= 0 && y + j < _map[0].Count)
+                {
+                    if (_map[x + i][y + j].type == Models.TileType.Floor && _map[x + i][y + j].character == null)
+                    {
+                        return true;
+                    }
                 }
             }
         }
+        return false;
+    }
+
+    private bool ContainsPlayer(int x1, int y1, int x2, int y2, int playerX, int playerY)
+    {
+        return playerX >= x1 && playerX <= x2 && playerY >= y1 && playerY <= y2;
     }
     
     public List<Enemy> GetEnemies() => _enemies;
