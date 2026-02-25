@@ -36,6 +36,7 @@ public class World
             var elapsed = (DateTime.Now - Events[i].StartTime).TotalSeconds;
             if (elapsed >= Events[i].LifespanSeconds) 
             {
+                Events[i].RemoveEffect(Map[(int)Events[i].X][(int)Events[i].Y].character);
                 Events.RemoveAt(i);
             }
         }

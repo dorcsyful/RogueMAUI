@@ -20,7 +20,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     public float frameCounterProgress = 0f;
     public float MoveSpeed = 5.0f;
     public readonly bool IsPlayer;
-
+    private bool _isTakingDamage = false;
     public void Move(int dx, int dy)
     {
         _x += dx;
@@ -164,6 +164,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     
     public void TakeDamage(int damage)
     {
+        _isTakingDamage = true;
         _health -= damage;
         if (_health <= 0)
         {
@@ -175,7 +176,8 @@ public abstract class Character(int x, int y, bool isPlayer)
     {
         target?.TakeDamage(damage);
     }
-    
+    public bool IsTakingDamage() => _isTakingDamage;
+    public void DisableDamage() => _isTakingDamage = false;
     public int GetX() => _x;
     public int GetY() => _y;
     public float GetVisualX() => _visual_x;

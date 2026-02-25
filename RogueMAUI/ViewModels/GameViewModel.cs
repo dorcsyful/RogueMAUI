@@ -9,6 +9,16 @@ namespace RogueMAUI.ViewModels;
 
 public class GameViewModel
 {
+    public static class SpritePaints 
+    {
+        public static readonly SKPaint Default = new SKPaint { FilterQuality = SKFilterQuality.None };
+    
+        public static readonly SKPaint RedTint = new SKPaint { 
+            FilterQuality = SKFilterQuality.None,
+            ColorFilter = SKColorFilter.CreateBlendMode(new SKColor(255, 0, 0, 128), SKBlendMode.SrcATop)
+        };
+    }
+    
     public World CurrentWorld { get; private set; }
     public IInputService InputService { get; }
     
@@ -173,7 +183,8 @@ public class GameViewModel
             {
                 rotation = directionY * 90f;
             }
-            DrawSprite(canvas, eSrc, eDest, 1,rotation,-directionX);
+            DrawSprite(canvas, eSrc, eDest, SpritePaints.Default, 1,rotation,-directionX);
+            
         }
     }
     
@@ -220,7 +231,7 @@ public class GameViewModel
             var eDest = new SKRect(eLeft, eTop, eLeft + 16.0f, eTop + 16.0f);
                 
             var directionX = enemy.GetDirectionX();
-            DrawSprite(canvas, eSrc, eDest, 1,0,directionX);
+            DrawSprite(canvas, eSrc, eDest,enemy.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default, 1,0,directionX);
         }
     }
 
@@ -233,10 +244,10 @@ public class GameViewModel
         float left = viewLeft + 4 * 16;
         float f = viewLeft + 16 * 4;
         var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
-        DrawSprite(canvas, pSrc, pDest, 1,0,world.Player.GetDirectionX());
+        DrawSprite(canvas, pSrc, pDest,world.Player.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default, 1,0,world.Player.GetDirectionX());
     }
 
-    private void DrawSprite(SKCanvas canvas, SKRect sourceRect, SKRect destination, float scale = 1.0f, float rotationDegrees = 0, float flipX = 1,float flipY = 1)
+    private void DrawSprite(SKCanvas canvas, SKRect sourceRect,  SKRect destination,SKPaint paint, float scale = 1.0f, float rotationDegrees = 0, float flipX = 1,float flipY = 1)
     {
         canvas.Save();
 
@@ -253,7 +264,7 @@ public class GameViewModel
         
 
         SKRect destRect = new SKRect(-width / 2, -height / 2, width / 2, height / 2);
-        canvas.DrawBitmap(_tileSheet, sourceRect, destRect);
+        canvas.DrawBitmap(_tileSheet, sourceRect, destRect, paint);
 
         canvas.Restore();
     }

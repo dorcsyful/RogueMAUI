@@ -194,14 +194,14 @@ public class InteriorDesign
             {
                 if (x + i >= 0 && x + i < _map.Count && y + j >= 0 && y + j < _map[0].Count)
                 {
-                    if (_map[x + i][y + j].type == Models.TileType.Floor && _map[x + i][y + j].character == null)
+                    if (_map[x + i][y + j].character != null)
                     {
-                        return true;
+                        return false;
                     }
                 }
             }
         }
-        return false;
+        return true;
     }
 
     private bool ContainsPlayer(int x1, int y1, int x2, int y2, int playerX, int playerY)
