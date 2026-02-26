@@ -24,13 +24,21 @@ public class World
         Rooms = _mapGenerator.GetRooms();
         Corridors = _mapGenerator.GetCorridors();
         Player = new Player(_mapGenerator.GetEntranceCoordinates().x, _mapGenerator.GetEntranceCoordinates().y);
+        Map[Player.GetX()][Player.GetY()].character = Player;
         Player.SetPosition(_mapGenerator.GetInteriorDesign().GetEntrance().x, _mapGenerator.GetInteriorDesign().GetEntrance().y);
         Enemies = _mapGenerator.GetInteriorDesign().GetEnemies();
-        if(Enemies.Count == 0) { throw new Exception("There are no enemies in this map."); }
+        if (Enemies.Count == 0)
+        {
+            throw new Exception("There are no enemies in this map.");
+        }
     }
 
     public void Update()
     {
+        for (int i = 0; i < Enemies.Count; i++)
+        {
+            Enemies[i].UpdateEnemy(0.016f, Player, Map);
+        }
         for(int i = Events.Count - 1; i >= 0; i--)
         {
             var elapsed = (DateTime.Now - Events[i].StartTime).TotalSeconds;

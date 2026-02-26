@@ -2,7 +2,7 @@ using RogueCore.Models;
 
 namespace RogueCore.Services.Algorithms;
 
-public class AStar
+public static class AStar
 {
     private class Node
     {
@@ -14,10 +14,10 @@ public class AStar
         public Node(int x, int y) { X = x; Y = y; }
     }
 
-    public List<Tile> FindPath(Tile startTile, Tile targetTile, Tile[][] map)
+    public static List<Tile>? FindPath(Tile startTile, Tile targetTile, List<List<Tile>> map)
     {
-        int width = map.Length;
-        int height = map[0].Length;
+        int width = map.Count;
+        int height = map[0].Count;
         Node[,] nodes = new Node[width, height];
         PriorityQueue<Node, int> openSetPriorityQueue = new PriorityQueue<Node, int>();
         bool[,] closed = new bool[width, height];
@@ -70,7 +70,7 @@ public class AStar
     
     }
 
-    private IEnumerable<(int, int)> GetNeighborCoords(Node n, int w, int h)
+    private static IEnumerable<(int, int)> GetNeighborCoords(Node n, int w, int h)
     {
         if (n.X > 0) yield return (n.X - 1, n.Y);
         if (n.X < w - 1) yield return (n.X + 1, n.Y);
@@ -78,18 +78,18 @@ public class AStar
         if (n.Y < h - 1) yield return (n.X, n.Y + 1);
     }
     
-    private int GetDistance(Node a, Node b)
+    private static int GetDistance(Node a, Node b)
     {
         // Manhattan distance: simple and fast for grid movement
         return Math.Abs(a.X - b.X) + Math.Abs(a.Y - b.Y);
     }
     
-    private int GetDistance(int x1, int y1, int x2, int y2)
+    private static int GetDistance(int x1, int y1, int x2, int y2)
     {
         return Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
     }
 
-    private List<Node> GetNeighbors(Node node, Tile[][] map)
+    private static List<Node> GetNeighbors(Node node, List<List<Tile>> map)
     {
         List<Node> neighbors = new List<Node>();
         int[] dx = { 0, 0, 1, -1 };
@@ -101,7 +101,7 @@ public class AStar
             int ny = node.Y + dy[i];
 
             // Only add if within bounds and walkable
-            if (nx >= 0 && nx < map.Length && ny >= 0 && ny < map[0].Length)
+            if (nx >= 0 && nx < map.Count && ny >= 0 && ny < map[0].Count)
             {
                 if (map[nx][ny].type != TileType.Empty) // Adjust to your wall logic
                 {
@@ -112,7 +112,7 @@ public class AStar
         return neighbors;
     }
 
-    private List<Tile> RetracePath(Node start, Node end, Tile[][] map)
+    private static List<Tile> RetracePath(Node start, Node end, List<List<Tile>> map)
     {
         List<Tile> path = new List<Tile>();
         Node curr = end;

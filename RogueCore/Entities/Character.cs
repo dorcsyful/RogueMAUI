@@ -22,6 +22,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     public readonly bool IsPlayer;
     private bool _isTakingDamage = false;
     protected bool _isDead = false;
+    protected bool isStuck = false;
     public void Move(int dx, int dy)
     {
         _x += dx;
@@ -67,7 +68,7 @@ public abstract class Character(int x, int y, bool isPlayer)
         UpdateAnimation(deltaTime);
     }
     
-    private void StartMove(int dx, int dy, List<List<Tile>> map)
+    protected void StartMove(int dx, int dy, List<List<Tile>> map)
     {
         int nextX = _x + dx;
         int nextY = _y + dy;
@@ -79,9 +80,13 @@ public abstract class Character(int x, int y, bool isPlayer)
             _isMoving = true;
             _moveProgress = 0f;
         }
+        else
+        {
+            isStuck = true;
+        }
     }
 
-    private bool IsPathClear(int targetX, int targetY, List<List<Tile>> map)
+    protected bool IsPathClear(int targetX, int targetY, List<List<Tile>> map)
     {
         if (targetX < 0 || targetY < 0 || targetX >= map.Count || targetY >= map[0].Count) 
             return false;
@@ -99,39 +104,46 @@ public abstract class Character(int x, int y, bool isPlayer)
         return true;
     }
     
-    private void ContinueMove(float deltaTime, float inputX, float inputY, List<List<Tile>> map)
+    protected void ContinueMove(float deltaTime, float inputX, float inputY, List<List<Tile>> map)
     {
         _moveProgress += deltaTime * MoveSpeed;
-        
-        _directionX = Math.Sign(inputX) != 0 ? Math.Sign(inputX) : _directionX;
-        _directionY = Math.Sign(inputY) != 0 ? Math.Sign(inputY) : _directionY;
+    
+        if (Math.Sign(inputX) != 0) _directionX = Math.Sign(inputX);
+        if (Math.Sign(inputY) != 0) _directionY = Math.Sign(inputY);
 
-        
         if (_moveProgress >= 1.0f)
         {
+            // Arrived at the target tile
             map[_x][_y].character = null;
             _x = _targetX;
             _y = _targetY;
             map[_x][_y].character = this;
             CheckTile(map[_targetX][_targetY]);
+
             float remainder = _moveProgress - 1.0f;
 
-            int dx = inputX > 0 ? 1 : (inputX < 0 ? -1 : 0);
-            int dy = inputY > 0 ? 1 : (inputY < 0 ? -1 : 0);
+            // Use the FRESH inputs passed from UpdateEnemy
+            int dx = (int)inputX;
+            int dy = (int)inputY;
 
-            if ((dx != 0 || dy != 0) && IsPathClear(_x + dx, _y + dy, map))
+            bool isPathClear = IsPathClear(_x + dx, _y + dy, map);
+        
+            // Only carry momentum if there's a valid next tile to move to
+            if ((dx != 0 || dy != 0) && isPathClear)
             {
                 _targetX = _x + dx;
                 _targetY = _y + dy;
-                _moveProgress = remainder; // Carry the momentum!
+                _moveProgress = remainder; // The magic "Smooth" line
                 UpdateVisualPosition();
             }
             else
             {
+                // Stop moving if the path is finished or blocked
                 _isMoving = false;
                 _moveProgress = 0f;
                 _visual_x = _x;
                 _visual_y = _y;
+                isStuck = !isPathClear && (dx != 0 || dy != 0);
             }
         }
         else
@@ -140,13 +152,21 @@ public abstract class Character(int x, int y, bool isPlayer)
         }
     }
     
-    private void UpdateVisualPosition()
+    protected void EmergencyStop()
+    {
+        _isMoving = false;
+        _moveProgress = 0f;
+        _visual_x = _x;
+        _visual_y = _y;
+    }
+    
+    protected void UpdateVisualPosition()
     {
         _visual_x = _x + (_targetX - _x) * _moveProgress;
         _visual_y = _y + (_targetY - _y) * _moveProgress;
     }    
     
-    private void UpdateAnimation(float deltaTime)
+    protected void UpdateAnimation(float deltaTime)
     {
         if (_isMoving)
         {

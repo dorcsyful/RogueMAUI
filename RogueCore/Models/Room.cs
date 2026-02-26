@@ -22,6 +22,16 @@ public class Room
         }
     }
 
+    public bool HasTile(Tile tile)
+    {
+        if(tile.x >= x1 && tile.x <= x2 && tile.y >= y1 && tile.y <= y2)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    
     public int Size()
     {
         int size = (Math.Abs(x2 - x1) + Math.Abs(y2 - y1));

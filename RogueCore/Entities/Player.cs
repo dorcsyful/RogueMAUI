@@ -36,6 +36,6 @@ public class Player : Character
 
     public override void Die()
     {
-        throw new NotImplementedException();
+        Console.WriteLine("Player has died!");
     }
 }

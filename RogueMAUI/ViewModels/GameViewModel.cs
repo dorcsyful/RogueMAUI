@@ -124,10 +124,9 @@ public class GameViewModel
             int endY = Math.Min(100, (int)Math.Ceiling((_viewTop + viewHeight) / 16.0f));
             
             DrawTiles(startX, endX, startY, endY, world, canvas, paint);
+            DrawEnemies(world, startX, endX, startY, endY, canvas);
 
             DrawPlayer(world, _viewLeft, _viewTop, canvas);
-
-            DrawEnemies(world, startX, endX, startY, endY, canvas);
             
              DrawEvents(world, startX, endX, startY, endY, canvas);
            
@@ -219,6 +218,22 @@ public class GameViewModel
         for(int i = 0; i < world.Enemies.Count; i++)
         {
             var enemy = world.Enemies[i];
+            if (enemy.plannedPath2 != null)
+            {
+                for (int j = 0; j < enemy.plannedPath2.Count; j++)
+                {
+                    int[] baseCoords = { 0, 0 };
+                    var dest = new SKRect(
+                        enemy.plannedPath2[j].x * 16.0f,
+                        enemy.plannedPath2[j].y * 16.0f,
+                        (enemy.plannedPath2[j].x + 1) * 16.0f,
+                        (enemy.plannedPath2[j].y + 1) * 16.0f
+                    );
+            
+                    var src = new SKRect(baseCoords[0], baseCoords[1], baseCoords[0] + 16, baseCoords[1] + 16);
+                    canvas.DrawBitmap(_tileSheet, src, dest, SpritePaints.RedTint);
+                }
+            }
             if(enemy.GetVisualX() < startX  || enemy.GetVisualX() > endX || enemy.GetVisualY() < startY || enemy.GetVisualY() > endY)
             {
                 continue; // Skip rendering this enemy if it's outside the view
@@ -231,6 +246,8 @@ public class GameViewModel
             var eDest = new SKRect(eLeft, eTop, eLeft + 16.0f, eTop + 16.0f);
                 
             var directionX = enemy.GetDirectionX();
+
+
             DrawSprite(canvas, eSrc, eDest,enemy.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default, 1,0,directionX);
         }
     }
