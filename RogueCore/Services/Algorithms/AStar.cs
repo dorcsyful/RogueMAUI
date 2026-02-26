@@ -36,7 +36,11 @@ public static class AStar
             if (closed[currentNode.X, currentNode.Y]) continue;
 
             if (currentNode.X == targetTile.x && currentNode.Y == targetTile.y)
-                return RetracePath(startNode, currentNode, map);
+            {
+                List<Tile> retracePath = RetracePath(startNode, currentNode, map);
+                retracePath.RemoveAt(retracePath.Count - 1);
+                return retracePath;
+            }
 
             closed[currentNode.X, currentNode.Y] = true;
 

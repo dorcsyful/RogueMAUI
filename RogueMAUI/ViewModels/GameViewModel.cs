@@ -1,4 +1,5 @@
-using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using RogueCore.Models;
 using RogueMAUI.Graphics;
 using RogueMAUI.Services;
@@ -7,25 +8,65 @@ using SkiaSharp.Views.Maui;
 
 namespace RogueMAUI.ViewModels;
 
-public class GameViewModel
+public class GameViewModel : INotifyPropertyChanged
 {
-    public static class SpritePaints 
+    private static class SpritePaints 
     {
-        public static readonly SKPaint Default = new SKPaint { FilterQuality = SKFilterQuality.None };
+        public static readonly SKPaint Default = new()
+        {
+            IsAntialias = false,
+            IsDither = false,
+            IsStroke = false,
+            Style = SKPaintStyle.Fill,
+            Color = default,
+            ColorF = default,
+            StrokeWidth = 0,
+            StrokeMiter = 0,
+            StrokeCap = SKStrokeCap.Butt,
+            StrokeJoin = SKStrokeJoin.Miter,
+            Shader = null,
+            MaskFilter = null,
+            ColorFilter = null,
+            ImageFilter = null,
+            BlendMode = SKBlendMode.Clear,
+            Blender = null,
+            PathEffect = null
+        };
     
-        public static readonly SKPaint RedTint = new SKPaint { 
-            FilterQuality = SKFilterQuality.None,
+        public static readonly SKPaint RedTint = new()
+        { 
             ColorFilter = SKColorFilter.CreateBlendMode(new SKColor(255, 0, 0, 128), SKBlendMode.SrcATop)
         };
     }
     
     public World CurrentWorld { get; private set; }
     public IInputService InputService { get; }
-    
+    private List<MenuButton> _menuButtons;
     public float CameraX { get; private set; }
     public float CameraY { get; private set; }
+    
+    public int Health
+    {
+        get => CurrentWorld.Player._health;
+        set
+        {
+            CurrentWorld.Player._health = value;
+            OnPropertyChanged(); // Tell the UI to update!
+        }
+    }
+
+    public int CoinCount
+    {
+        get => CurrentWorld.Player.numOfCoins;
+        set
+        {
+            CurrentWorld.Player.numOfCoins = value;
+            OnPropertyChanged();
+        }
+    }
+
     private float tx, ty, scale;
-    private SKBitmap _tileSheet;
+    private SKBitmap? _tileSheet;
     private float _viewLeft;
     private float _viewTop;
 
@@ -36,8 +77,29 @@ public class GameViewModel
         InputService = inputService;
         CurrentWorld = new World();
         LoadAssets();
+        _menuButtons = new List<MenuButton>
+        {
+            new MenuButton("Restart Game", () => StartGame()),
+            new MenuButton("Exit", () => QuitGame())
+        };
     }
-    
+
+    private void StartGame()
+    {
+        Console.WriteLine("Starting game");
+        int health = CurrentWorld.Player._health;
+        int coinCount = CurrentWorld.Player.numOfCoins;
+        CurrentWorld = new World();
+        CurrentWorld.Player._health = health;
+        CurrentWorld.Player.numOfCoins = coinCount;
+         OnPropertyChanged(nameof(CurrentWorld));
+    }
+
+    private void QuitGame()
+    {
+        throw new NotImplementedException();
+    }
+
     public void Initialize()
     {
         CurrentWorld = new World();
@@ -51,6 +113,8 @@ public class GameViewModel
     
     public void Update()
     {
+        Health = CurrentWorld.Player._health;
+        CoinCount = CurrentWorld.Player.numOfCoins;
         var (x, y) = InputService.GetMovementVector();
         CurrentWorld.Player.Update(0.016f,x, y, CurrentWorld.Map);
         float targetCameraX = CurrentWorld.Player.GetVisualX() - 3.5f; // 3.5 centers the 16px player better in an 8-tile view
@@ -61,11 +125,33 @@ public class GameViewModel
         CameraY += (targetCameraY - CameraY) * cameraLerpSpeed;
         CurrentWorld.Update();
         
+        ProcessAttackInput();
+        HandleMenuClick();
+    }
+
+    public void HandleMenuClick()
+    {
+        var click = InputService.GetMenuClick();
+        if (click == null  || CurrentWorld.State == World.GameState.Playing) return;
+        float gameX = (click.Value.X - tx) / scale;
+        float gameY = (click.Value.Y - ty) / scale;
+
+        foreach (var btn in _menuButtons)
+        {
+            if (btn.Contains(gameX, gameY))
+            {
+                btn.OnClick();
+                break; 
+            }
+        }
+    }
+    
+    private void ProcessAttackInput()
+    {
         var attackVector = InputService.GetAttackVector();
         if (attackVector.HasValue)
         {
             var click = attackVector;
-            if (click == null) return;
 
             float localX = click.Value.X - tx;
             float localY = click.Value.Y - ty;
@@ -83,7 +169,7 @@ public class GameViewModel
             {
                 CurrentWorld.PlayerAttack(clickedTileX, clickedTileY);
                 
-            };
+            }
         }
     }
 
@@ -97,7 +183,7 @@ public class GameViewModel
             
             canvas.Clear(SKColors.Black);
 
-            var paint = new SKPaint { FilterQuality = SKFilterQuality.None };
+            var paint = new SKPaint();
             var world = CurrentWorld;
 
             // (128x128 pixels = 8x8 tiles)
@@ -129,7 +215,7 @@ public class GameViewModel
             DrawPlayer(world, _viewLeft, _viewTop, canvas);
             
              DrawEvents(world, startX, endX, startY, endY, canvas);
-           
+            DrawMenu(canvas, _viewLeft, _viewTop, viewWidth, viewHeight);
             canvas.Restore();
 
         }
@@ -174,16 +260,19 @@ public class GameViewModel
             float eLeft = (current.X * 16);
             float eTop = (current.Y * 16);
             var eDest = new SKRect(eLeft, eTop, eLeft + 16.0f, eTop + 16.0f);
-                
-            var directionX = Math.Sign(world.Player.GetX() - current.X) == 0 ? 1 : Math.Sign(world.Player.GetX() - current.X); // Default to facing right if perfectly vertical
-            var directionY = Math.Sign(world.Player.GetY() - current.Y); // Default to facing down if perfectly horizontal
-            float rotation = 0;
-            if (directionY != 0)
+
+            var character = world.Events[i].Source != null ? world.Events[i].Source : world.Player;
+            if (character != null)
             {
-                rotation = directionY * 90f;
+                var directionX = Math.Sign(character.GetX() - current.X) == 0 ? 1 : Math.Sign(character.GetX() - current.X); // Default to facing right if perfectly vertical
+                var directionY = Math.Sign(character.GetY() - current.Y); // Default to facing down if perfectly horizontal
+                float rotation = 0;
+                if (directionY != 0)
+                {
+                    rotation = directionY * 90f;
+                }
+                DrawSprite(canvas, eSrc, eDest, SpritePaints.Default,rotation,-directionX);
             }
-            DrawSprite(canvas, eSrc, eDest, SpritePaints.Default, 1,rotation,-directionX);
-            
         }
     }
     
@@ -195,8 +284,8 @@ public class GameViewModel
             for (int y = startY; y < endY; y++)
             {
                 var tile = world.Map[x][y];
-                int[] baseCoords = Graphics.TileCoordinates.GetTileBaseCoordinates(tile.type);
-                int[] decorCoords = Graphics.TileCoordinates.GetDecorationTileCoordinates(tile.type);
+                int[] baseCoords = TileCoordinates.GetTileBaseCoordinates(tile.type);
+                int[] decorCoords = TileCoordinates.GetDecorationTileCoordinates(tile.type);
 
                 var dest = new SKRect(
                     x * 16.0f,
@@ -218,27 +307,12 @@ public class GameViewModel
         for(int i = 0; i < world.Enemies.Count; i++)
         {
             var enemy = world.Enemies[i];
-            if (enemy.plannedPath2 != null)
-            {
-                for (int j = 0; j < enemy.plannedPath2.Count; j++)
-                {
-                    int[] baseCoords = { 0, 0 };
-                    var dest = new SKRect(
-                        enemy.plannedPath2[j].x * 16.0f,
-                        enemy.plannedPath2[j].y * 16.0f,
-                        (enemy.plannedPath2[j].x + 1) * 16.0f,
-                        (enemy.plannedPath2[j].y + 1) * 16.0f
-                    );
-            
-                    var src = new SKRect(baseCoords[0], baseCoords[1], baseCoords[0] + 16, baseCoords[1] + 16);
-                    canvas.DrawBitmap(_tileSheet, src, dest, SpritePaints.RedTint);
-                }
-            }
+
             if(enemy.GetVisualX() < startX  || enemy.GetVisualX() > endX || enemy.GetVisualY() < startY || enemy.GetVisualY() > endY)
             {
                 continue; // Skip rendering this enemy if it's outside the view
             }
-            var eCoords = enemy.GetActiveFrame() == -1 ? Graphics.TileCoordinates.Enemy.Idle : Graphics.TileCoordinates.Enemy.RunAnimation
+            var eCoords = enemy.GetActiveFrame() == -1 ? TileCoordinates.Enemy.Idle : TileCoordinates.Enemy.RunAnimation
                 [enemy.GetActiveFrame()];
             var eSrc = new SKRect(eCoords.x, eCoords.y, eCoords.x + 16, eCoords.y + 16);
             float eLeft = (enemy.GetVisualX() * 16);
@@ -248,23 +322,24 @@ public class GameViewModel
             var directionX = enemy.GetDirectionX();
 
 
-            DrawSprite(canvas, eSrc, eDest,enemy.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default, 1,0,directionX);
+            DrawSprite(canvas, eSrc, eDest,enemy.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default,0,directionX);
         }
     }
 
     private void DrawPlayer(World world, float viewLeft, float viewTop, SKCanvas canvas)
     {
-        var pCoords = world.Player.GetActiveFrame() == -1 ? Graphics.TileCoordinates.Player.Idle : Graphics.TileCoordinates.Player.RunAnimation
+        if (world.Player.IsDead()) return;
+        var pCoords = world.Player.GetActiveFrame() == -1 ? TileCoordinates.Player.Idle : TileCoordinates.Player.RunAnimation
             [world.Player.GetActiveFrame()];
         
         var pSrc = new SKRect(pCoords.x, pCoords.y, pCoords.x + 16, pCoords.y + 16);
         float left = viewLeft + 4 * 16;
         float f = viewLeft + 16 * 4;
         var pDest = new SKRect(left, viewTop + 16 * 4, f + 16.0f, viewTop + 16 * 4 + 16.0f);
-        DrawSprite(canvas, pSrc, pDest,world.Player.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default, 1,0,world.Player.GetDirectionX());
+        DrawSprite(canvas, pSrc, pDest,world.Player.IsTakingDamage() ? SpritePaints.RedTint : SpritePaints.Default,0,world.Player.GetDirectionX());
     }
 
-    private void DrawSprite(SKCanvas canvas, SKRect sourceRect,  SKRect destination,SKPaint paint, float scale = 1.0f, float rotationDegrees = 0, float flipX = 1,float flipY = 1)
+    private void DrawSprite(SKCanvas canvas, SKRect sourceRect,  SKRect destination,SKPaint paint, float rotationDegrees = 0, float flipX = 1,float flipY = 1)
     {
         canvas.Save();
 
@@ -286,6 +361,59 @@ public class GameViewModel
         canvas.Restore();
     }
 
+    private void DrawMenu(SKCanvas canvas, float viewLeft, float viewTop, float width, float height)
+    {
+        var textPaint = new SKPaint { 
+            Color = SKColors.White, 
+            TextSize = height * 0.08f, // Text size is 8% of screen height
+            IsAntialias = false,
+            TextAlign = SKTextAlign.Center 
+        };
+
+        var boxPaint = new SKPaint { 
+            Color = new SKColor(60, 60, 60), 
+            Style = SKPaintStyle.Fill 
+        };
+
+        float centerX = viewLeft + width / 2f;
+        float startY = viewTop + height * 0.3f; // Start at 30% down the screen
+        float verticalPadding = height * 0.05f; // Gap between elements
+
+        // 1. Draw Title
+        canvas.DrawText("Game Over", centerX, startY, textPaint);
+
+        // 2. Calculate Button Layout
+        float buttonWidth = width * 0.6f; // Buttons take up 60% of canvas width
+        float buttonHeight = height * 0.12f; // Each button is 12% of canvas height
+        float currentY = startY + verticalPadding;
+
+        foreach (var btn in _menuButtons)
+        {
+            // Define the button rectangle centered on X
+            btn.Bounds = SKRect.Create(
+                centerX - (buttonWidth / 2f), 
+                currentY, 
+                buttonWidth, 
+                buttonHeight
+            );
+
+            // Draw the background
+            canvas.DrawRect(btn.Bounds, boxPaint);
+
+            // Draw text centered inside the calculated Bounds
+            // We add buttonHeight * 0.7f to roughly baseline-center the text
+            canvas.DrawText(
+                btn.Text, 
+                centerX, 
+                currentY + (buttonHeight * 0.7f), 
+                textPaint
+            );
+
+            // Move the cursor down for the next button
+            currentY += buttonHeight + (verticalPadding * 0.5f);
+        }
+    }    
+    
     private bool CheckIfNeighbor(int x, int y)
     {
         if(x == CurrentWorld.Player.GetX() && Math.Abs(y - CurrentWorld.Player.GetY()) == 1)
@@ -301,4 +429,19 @@ public class GameViewModel
         return false;
     }
     
+    protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    
+
+    protected bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
+        OnPropertyChanged(propertyName);
+        return true;
+    }
 }

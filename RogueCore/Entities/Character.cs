@@ -19,7 +19,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     protected int frameCounter = 0;
     public float frameCounterProgress = 0f;
     public float MoveSpeed = 5.0f;
-    public readonly bool IsPlayer;
+    public  bool IsPlayer;
     private bool _isTakingDamage = false;
     protected bool _isDead = false;
     protected bool isStuck = false;
@@ -106,6 +106,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     
     protected void ContinueMove(float deltaTime, float inputX, float inputY, List<List<Tile>> map)
     {
+        if (_isDead) return;
         _moveProgress += deltaTime * MoveSpeed;
     
         if (Math.Sign(inputX) != 0) _directionX = Math.Sign(inputX);

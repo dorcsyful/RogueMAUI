@@ -6,6 +6,13 @@ namespace RogueCore.Models;
 
 public class World
 {
+    public enum GameState
+    {
+        Playing,
+        GameOver,
+        NextLevel
+    }
+    
     public List<List<Tile>> Map;
     public List<Room> Rooms;
     public List<Corridor> Corridors;
@@ -13,11 +20,12 @@ public class World
     public List<Enemy> Enemies;
     private MapGenerator _mapGenerator;
     public List<Event> Events { get; private set; }
+    public GameState State { get; private set; }
 
     public World()
     {
         Events = new List<Event>();
-
+        State = GameState.GameOver;
         _mapGenerator = new MapGenerator();
         _mapGenerator.GenerateMap();
         Map = _mapGenerator.GetMap();
@@ -33,12 +41,31 @@ public class World
         }
     }
 
+    public void Reset()
+    {
+        
+    }
+    
     public void Update()
     {
         for (int i = 0; i < Enemies.Count; i++)
         {
             Enemies[i].UpdateEnemy(0.016f, Player, Map);
+            if (Enemies[i].IsAttacking())
+            {
+                Events.Add(new Event
+                {
+                    Type = EventType.SlashAttack,
+                    X = Player.GetX(),
+                    Y = Player.GetY(),
+                    LifespanSeconds = 1f,
+                    Source = Enemies[i]
+                });
+                Enemies[i].SetIsAttacking(false);
+
+            }
         }
+        
         for(int i = Events.Count - 1; i >= 0; i--)
         {
             var elapsed = (DateTime.Now - Events[i].StartTime).TotalSeconds;
@@ -50,15 +77,19 @@ public class World
                 {
                     if (!character.IsPlayer)
                     {
+                        EnemyDeath(i, character);
+                    }
+                    else
+                    {
+                        State = GameState.GameOver;
                         Events.Add(new Event
                         {
                             Type = EventType.ExplosionDeath,
                             X = Events[i].X,
                             Y = Events[i].Y,
-                            LifespanSeconds = 1f
+                            LifespanSeconds = 1f,
+                            Source = Player
                         });
-                        Enemies.Remove((Enemy)character);
-                        Map[(int)Events[i].X][(int)Events[i].Y].character = null;
                     }
                 }
 
@@ -70,7 +101,21 @@ public class World
             }
         }
     }
-    
+
+    private void EnemyDeath(int i, Character character)
+    {
+        Events.Add(new Event
+        {
+            Type = EventType.ExplosionDeath,
+            X = Events[i].X,
+            Y = Events[i].Y,
+            LifespanSeconds = 1f,
+            Source = Events[i].Source
+        });
+        Enemies.Remove((Enemy)character);
+        Map[(int)Events[i].X][(int)Events[i].Y].character = null;
+    }
+
     public bool TryMovePlayer(int dx, int dy)
     {
         int newX = Player.GetX() + dx;
@@ -97,7 +142,8 @@ public class World
             Type = EventType.SlashAttack,
             X = x,
             Y = y,
-                LifespanSeconds = 1f
+                LifespanSeconds = 1f,
+                Source = Player
         });
 
             var targetTile = Map[x][y];

@@ -5,7 +5,8 @@ namespace RogueCore.Models;
 public enum EventType
 {
     SlashAttack,
-    ExplosionDeath
+    ExplosionDeath,
+    PlayerDeath
 }
 
 public class Event
@@ -14,6 +15,7 @@ public class Event
      public DateTime StartTime { get; set; } = DateTime.Now;
      public float LifespanSeconds { get; set; } = 1.0f;     public float X { get; set; }
      public float Y { get; set; }
+     public Character? Source;
      
      public void RemoveEffect(Character? character)
      {

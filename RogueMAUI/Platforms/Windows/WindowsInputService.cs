@@ -30,16 +30,21 @@ public class WindowsInputService : IInputService
             {
                 _pendingClick = ((float)pt.Position.X, (float)pt.Position.Y);
             }
-        };    }
+        };    
+    }
 
     public (float X, float Y) GetMovementVector() => (_x, _y);
-
     public (float X, float Y)? GetAttackVector()
     {
         var click = _pendingClick;
         _pendingClick = null; // Consume the click
-        return click;
-        
+        return click;   
     }
-    
+
+    public (float X, float Y)? GetMenuClick()
+    {
+        var click = _pendingClick;
+        _pendingClick = null; // Consume the click
+        return click;    
+    }
 }

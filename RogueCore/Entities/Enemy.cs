@@ -15,6 +15,7 @@ public class Enemy : Character
     public List<Tile>? plannedPath = new List<Tile>();
     public List<Tile>? plannedPath2 = new List<Tile>();
     private bool hasTargeted = false;
+    private bool isAttacking = false;
     public Enemy(int x, int y, Room room) : base(x, y, false)
     {
         _health = 100;
@@ -26,10 +27,14 @@ public class Enemy : Character
     {
         if (_isDead) return;
 
-        // 1. Pathfinding Refresh logic
+        if (NeighboringPlayer(player))
+        {
+            TimeAttack(player);
+        }
+        
         if (!hasTargeted && !_isMoving || (DateTime.Now > _nextRetargetTime))
         {
-            EmergencyStop();
+            //EmergencyStop();
             Retarget(player, map);
         }
 
@@ -68,7 +73,7 @@ public class Enemy : Character
             _pathDirectionY = 0;
             return;
         }
-
+        
         int dx = plannedPath[0].x - _x;
         int dy = plannedPath[0].y - _y;
 
@@ -110,13 +115,24 @@ public class Enemy : Character
 
     protected override void CheckTile(Tile tile)
     {
-        if (tile.character != null && tile.character.IsPlayer)
+        
+    }
+
+    private void TimeAttack(Player player)
+    {
+        if(DateTime.Now > lastAttackTime.AddSeconds(attackCooldown) && !IsTakingDamage() && !player.IsDead())
         {
-            if ((DateTime.Now - lastAttackTime).TotalSeconds >= attackCooldown)
-            {
-                Attack(tile.character,10); 
-                lastAttackTime = DateTime.Now; 
-            }
+            // Attack logic here (e.g., reduce player health)
+            lastAttackTime = DateTime.Now;
+            Attack(player, 10);
+            Console.WriteLine("Enemy attacked player");
+            isAttacking = true;
         }
     }
+    
+    public void SetIsAttacking(bool attacking)
+    {
+        isAttacking = attacking;
+    }
+    public bool IsAttacking() { return isAttacking; }
 }

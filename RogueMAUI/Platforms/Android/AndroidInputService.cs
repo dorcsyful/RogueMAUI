@@ -9,5 +9,10 @@ public class AndroidInputService : IInputService
     {
         throw new NotImplementedException();
     }
+    
+    public (float X, float Y)? GetMenuClick()
+    {
+        throw new NotImplementedException();
+    }
 
 }
