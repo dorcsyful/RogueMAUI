@@ -36,8 +36,10 @@ public partial class GamePage : ContentPage
         {
             if (_viewModel.QuitRequested)
             {
+                _isGameRunning = false;
                 _viewModel.QuitRequested = false;
                 await Shell.Current.GoToAsync("MainPage");
+                return;
             }
             _viewModel.Update();
         

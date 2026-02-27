@@ -23,6 +23,7 @@ public abstract class Character(int x, int y)
     private bool _isTakingDamage;
     protected bool _isDead = false;
     protected bool isStuck;
+    protected DateTime stopTakingDamage;
     public void Move(int dx, int dy)
     {
         _x += dx;
@@ -51,6 +52,10 @@ public abstract class Character(int x, int y)
     
     public void Update(float deltaTime, float inputX, float inputY, List<List<Tile>> map )
     {
+        if(_isTakingDamage && DateTime.Now >= stopTakingDamage)
+        {
+            _isTakingDamage = false;
+        }
         if (!_isMoving)
         {
             if (inputX != 0 || inputY != 0)
@@ -198,6 +203,7 @@ public abstract class Character(int x, int y)
     public void TakeDamage(int damage)
     {
         _isTakingDamage = true;
+        stopTakingDamage = DateTime.Now.AddSeconds(1f);
         _health -= damage;
         if (_health <= 0)
         {

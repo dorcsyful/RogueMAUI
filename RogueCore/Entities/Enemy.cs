@@ -7,7 +7,7 @@ namespace RogueCore.Entities;
 public class Enemy : Character
 {
     private Room _room;
-    private float attackCooldown = 1f;
+    private float attackCooldown = 2f;
     private DateTime lastAttackTime = DateTime.MinValue;
     private DateTime _nextRetargetTime;
     private int _pathDirectionX = 0;

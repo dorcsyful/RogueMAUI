@@ -21,6 +21,7 @@ public class World
     private MapGenerator _mapGenerator;
     public List<Event> Events { get; private set; }
     public GameState State { get; private set; }
+    public DateTime NextLevelTime { get; private set; }
 
     public World()
     {
@@ -48,6 +49,13 @@ public class World
     
     public void Update()
     {
+        if (Player.reachedExit)
+        {
+            Player.reachedExit = false;
+            State = GameState.NextLevel;
+            NextLevelTime = DateTime.Now.AddSeconds(2);
+        }
+        
         for (int i = 0; i < Enemies.Count; i++)
         {
             Enemies[i].UpdateEnemy(0.016f, Player, Map);
@@ -95,7 +103,7 @@ public class World
 
                 if (Events[i].Type == EventType.ExplosionDeath)
                 {
-                    Map[(int)Events[i].X][(int)Events[i].Y].type = TileType.Coin;
+                    Map[(int)Events[i].X][(int)Events[i].Y].type = Random.Shared.Next(0,100) < 30 ? TileType.Coin : TileType.HealthPotion;
                 }
                 Map[(int)Events[i].X][(int)Events[i].Y].character?.DisableDamage();
                 Events.RemoveAt(i);

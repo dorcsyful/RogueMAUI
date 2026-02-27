@@ -25,8 +25,8 @@ namespace RogueCore
             {
                 public const int MaxNumOfCoins = 10;
                 public const int NumOfCoinsPerRoom = 5;
-                public const int MaxNumOfEnemies = 1;
-                public const int MaxChasingEnemiesPerRoom = 1;
+                public const int MaxNumOfEnemies = 2;
+                public const int MaxChasingEnemiesPerRoom = 5;
                 public const int MaxPatrollingEnemiesPerRoom = 1;
                 public const int MaxObservingEnemiesPerRoom = 3;
                 public const int NumOfPotionPerRoom = 1;

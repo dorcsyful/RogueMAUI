@@ -105,6 +105,11 @@ public class GameViewModel : INotifyPropertyChanged
 
         if (CurrentWorld.State == World.GameState.NextLevel)
         {
+            CurrentWorld.Update();
+            if(CurrentWorld.NextLevelTime <= DateTime.Now)
+            {
+                StartGame();
+            }
             return;
         }
 
@@ -380,6 +385,20 @@ public class GameViewModel : INotifyPropertyChanged
         float startY = viewTop + height * 0.3f; // Start at 30% down the screen
         float verticalPadding = height * 0.05f; // Gap between elements
 
+        if(CurrentWorld.State == World.GameState.GameOver) DrawGameOverMenu(canvas, width, height, centerX, startY, textPaint, verticalPadding, boxPaint);
+        else if(CurrentWorld.State == World.GameState.NextLevel) DrawNextLevelMenu(canvas, width, height, centerX, startY, textPaint, verticalPadding, boxPaint);
+    }
+
+    private void DrawNextLevelMenu(SKCanvas canvas, float width, float height, float centerX, float startY, SKPaint textPaint, float verticalPadding, SKPaint boxPaint)
+    {
+        // 1. Draw Title
+        canvas.DrawText("Reached the Exit!", centerX, startY, textPaint);
+        canvas.DrawText("Starting next level!", centerX, startY + verticalPadding, textPaint);
+    }
+
+    private void DrawGameOverMenu(SKCanvas canvas, float width, float height, float centerX, float startY,
+        SKPaint textPaint, float verticalPadding, SKPaint boxPaint)
+    {
         // 1. Draw Title
         canvas.DrawText("Game Over", centerX, startY, textPaint);
 
@@ -413,8 +432,8 @@ public class GameViewModel : INotifyPropertyChanged
             // Move the cursor down for the next button
             currentY += buttonHeight + (verticalPadding * 0.5f);
         }
-    }    
-    
+    }
+
     private bool CheckIfNeighbor(int x, int y)
     {
         if(x == CurrentWorld.Player.GetX() && Math.Abs(y - CurrentWorld.Player.GetY()) == 1)
