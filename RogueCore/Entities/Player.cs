@@ -7,7 +7,7 @@ public class Player : Character
 {
     public int numOfCoins;
     public bool reachedExit = false;
-    public Player(int x, int y) : base(x, y, true)
+    public Player(int x, int y) : base(x, y)
     {
         _maxHealth = GameSettings.Player.MaxHealth;
         _health = _maxHealth;

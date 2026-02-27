@@ -16,7 +16,7 @@ public class Enemy : Character
     public List<Tile>? plannedPath2 = new List<Tile>();
     private bool hasTargeted = false;
     private bool isAttacking = false;
-    public Enemy(int x, int y, Room room) : base(x, y, false)
+    public Enemy(int x, int y, Room room) : base(x, y)
     {
         _health = 100;
         _room = room;

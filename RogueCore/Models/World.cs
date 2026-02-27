@@ -25,7 +25,7 @@ public class World
     public World()
     {
         Events = new List<Event>();
-        State = GameState.GameOver;
+        State = GameState.Playing;
         _mapGenerator = new MapGenerator();
         _mapGenerator.GenerateMap();
         Map = _mapGenerator.GetMap();
@@ -97,6 +97,7 @@ public class World
                 {
                     Map[(int)Events[i].X][(int)Events[i].Y].type = TileType.Coin;
                 }
+                Map[(int)Events[i].X][(int)Events[i].Y].character?.DisableDamage();
                 Events.RemoveAt(i);
             }
         }

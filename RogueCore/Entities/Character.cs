@@ -2,7 +2,7 @@ using RogueCore.Models;
 
 namespace RogueCore.Entities;
 
-public abstract class Character(int x, int y, bool isPlayer)
+public abstract class Character(int x, int y)
 {
     protected int _x = x;
     protected int _y = y;
@@ -12,17 +12,17 @@ public abstract class Character(int x, int y, bool isPlayer)
     protected int _maxHealth;
     public int _health;
     
-    protected bool _isMoving = false;
-    protected float _moveProgress = 0f; 
+    protected bool _isMoving;
+    protected float _moveProgress; 
     protected int _targetX, _targetY;
     protected int _directionX = 1, _directionY = 1;
-    protected int frameCounter = 0;
-    public float frameCounterProgress = 0f;
+    protected int frameCounter;
+    public float frameCounterProgress;
     public float MoveSpeed = 5.0f;
     public  bool IsPlayer;
-    private bool _isTakingDamage = false;
+    private bool _isTakingDamage;
     protected bool _isDead = false;
-    protected bool isStuck = false;
+    protected bool isStuck;
     public void Move(int dx, int dy)
     {
         _x += dx;
@@ -37,7 +37,7 @@ public abstract class Character(int x, int y, bool isPlayer)
     
     public void AddHealth(int health)
     {
-        health = Math.Clamp(_health + health, 0, _maxHealth);
+        _health = Math.Clamp(_health + health, 0, _maxHealth);
     }
 
     public void ResetHealth()
@@ -91,8 +91,9 @@ public abstract class Character(int x, int y, bool isPlayer)
         if (targetX < 0 || targetY < 0 || targetX >= map.Count || targetY >= map[0].Count) 
             return false;
 
-        if (map[targetX][targetY].type == TileType.Empty ||
-            (map[targetX][targetY].character != null && !map[targetX][targetY].character.IsPlayer))
+        Character? character = map[targetX][targetY].character;
+        if (character != null && (map[targetX][targetY].type == TileType.Empty ||
+                                  (!character.IsPlayer)))
             return false;
 
         if (targetX != _x && targetY != _y)
@@ -114,6 +115,16 @@ public abstract class Character(int x, int y, bool isPlayer)
 
         if (_moveProgress >= 1.0f)
         {
+            if(map[_targetX][_targetY].character != null)
+            {
+                // Collision with another character, stop movement and handle interaction
+                _isMoving = false;
+                _moveProgress = 0f;
+                _visual_x = _x;
+                _visual_y = _y;
+                isStuck = true;
+                return;
+            }
             // Arrived at the target tile
             map[_x][_y].character = null;
             _x = _targetX;

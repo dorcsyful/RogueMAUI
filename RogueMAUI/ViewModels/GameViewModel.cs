@@ -14,23 +14,7 @@ public class GameViewModel : INotifyPropertyChanged
     {
         public static readonly SKPaint Default = new()
         {
-            IsAntialias = false,
-            IsDither = false,
-            IsStroke = false,
-            Style = SKPaintStyle.Fill,
-            Color = default,
-            ColorF = default,
-            StrokeWidth = 0,
-            StrokeMiter = 0,
-            StrokeCap = SKStrokeCap.Butt,
-            StrokeJoin = SKStrokeJoin.Miter,
-            Shader = null,
-            MaskFilter = null,
-            ColorFilter = null,
-            ImageFilter = null,
-            BlendMode = SKBlendMode.Clear,
-            Blender = null,
-            PathEffect = null
+            Color = SKColors.Black,
         };
     
         public static readonly SKPaint RedTint = new()
@@ -44,7 +28,7 @@ public class GameViewModel : INotifyPropertyChanged
     private List<MenuButton> _menuButtons;
     public float CameraX { get; private set; }
     public float CameraY { get; private set; }
-    
+    public bool QuitRequested { get; set; }
     public int Health
     {
         get => CurrentWorld.Player._health;
@@ -92,12 +76,12 @@ public class GameViewModel : INotifyPropertyChanged
         CurrentWorld = new World();
         CurrentWorld.Player._health = health;
         CurrentWorld.Player.numOfCoins = coinCount;
-         OnPropertyChanged(nameof(CurrentWorld));
+        OnPropertyChanged(nameof(CurrentWorld));
     }
 
     private void QuitGame()
     {
-        throw new NotImplementedException();
+        QuitRequested = true;
     }
 
     public void Initialize()
@@ -113,6 +97,17 @@ public class GameViewModel : INotifyPropertyChanged
     
     public void Update()
     {
+        if(CurrentWorld.State == World.GameState.GameOver)
+        {
+            HandleMenuClick();
+            return;
+        }
+
+        if (CurrentWorld.State == World.GameState.NextLevel)
+        {
+            return;
+        }
+
         Health = CurrentWorld.Player._health;
         CoinCount = CurrentWorld.Player.numOfCoins;
         var (x, y) = InputService.GetMovementVector();
@@ -126,19 +121,24 @@ public class GameViewModel : INotifyPropertyChanged
         CurrentWorld.Update();
         
         ProcessAttackInput();
-        HandleMenuClick();
     }
 
     public void HandleMenuClick()
     {
         var click = InputService.GetMenuClick();
-        if (click == null  || CurrentWorld.State == World.GameState.Playing) return;
-        float gameX = (click.Value.X - tx) / scale;
-        float gameY = (click.Value.Y - ty) / scale;
+        if (click == null ) return;
+        float localX = click.Value.X - tx;
+        float localY = click.Value.Y - ty;
+
+        float gameX = localX / scale;
+        float gameY = localY / scale;
+
+        float worldPixelX = gameX + _viewLeft;
+        float worldPixelY = gameY + _viewTop;
 
         foreach (var btn in _menuButtons)
         {
-            if (btn.Contains(gameX, gameY))
+            if (btn.Contains(worldPixelX, worldPixelY))
             {
                 btn.OnClick();
                 break; 
@@ -214,7 +214,7 @@ public class GameViewModel : INotifyPropertyChanged
 
             DrawPlayer(world, _viewLeft, _viewTop, canvas);
             
-             DrawEvents(world, startX, endX, startY, endY, canvas);
+            DrawEvents(world, startX, endX, startY, endY, canvas);
             DrawMenu(canvas, _viewLeft, _viewTop, viewWidth, viewHeight);
             canvas.Restore();
 
@@ -363,6 +363,7 @@ public class GameViewModel : INotifyPropertyChanged
 
     private void DrawMenu(SKCanvas canvas, float viewLeft, float viewTop, float width, float height)
     {
+        if (CurrentWorld.State == World.GameState.Playing) return;
         var textPaint = new SKPaint { 
             Color = SKColors.White, 
             TextSize = height * 0.08f, // Text size is 8% of screen height
