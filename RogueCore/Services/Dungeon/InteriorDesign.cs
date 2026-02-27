@@ -53,7 +53,6 @@ public class InteriorDesign
             }
         }
 
-        end = start;
         if (start != null && end != null)
         {
             // Place entrance and exit in the middle of the rooms
@@ -62,9 +61,9 @@ public class InteriorDesign
             int endX = (end.x1 + end.x2) / 2;
             int endY = (end.y1 + end.y2) / 2;
             Tile entrance = new Tile(startX, startY, Models.TileType.Entrance);
-            Tile exit = new Tile(endX + 1, endY, Models.TileType.Exit);
+            Tile exit = new Tile(endX, endY, Models.TileType.Exit);
             _map[startX][startY] = entrance;
-            _map[endX + 1][endY] = exit;
+            _map[endX][endY] = exit;
             _entrance = entrance;
             _exit = exit;
             Console.WriteLine("ENTRANCE PLACED: " + entrance.x + "," + entrance.y);
